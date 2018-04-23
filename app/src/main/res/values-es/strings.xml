@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- VIEW PROFILE VIEW -->
+    <string name="edit_icon_name">Editar perfil</string>
+    <string name="name_title">Nombre</string>
+    <string name="name_value">(Vacío)</string>
+    <string name="mail_title">Correo electrónico</string>
+    <string name="mail_value">(Vacío)</string>
+    <string name="bio_title">Breve descripción</string>
+    <string name="bio_value">(Vacío)</string>
+
+    <!-- EDIT PROFILE VIEW -->
+    <string name="load_image_button">Cargar imagen</string>
+    <string name="open_camera_button">Abrir cámara</string>
+</resources>

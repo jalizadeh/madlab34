@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MADLab</string>
+
+    <!-- VIEW PROFILE VIEW -->
+    <string name="edit_icon_name">EditProfile</string>
+    <string name="name_title">Name</string>
+    <string name="name_value">(Empty)</string>
+    <string name="mail_title">Mail</string>
+    <string name="mail_value">(Empty)</string>
+    <string name="bio_title">Short bio</string>
+    <string name="bio_value">(Empty)</string>
+
+    <!-- EDIT PROFILE VIEW -->
+    <string name="load_image_button">Load image</string>
+    <string name="open_camera_button">Open camera</string>
+
+</resources>
