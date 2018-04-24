@@ -43,6 +43,11 @@ public class EditProfile extends AppCompatActivity {
         EditText editText_bio = (EditText) findViewById(R.id.editText_bio);
         String bio = editText_bio.getText().toString();
         intent.putExtra("bio", bio);
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
         startActivity(intent);
     }
 
@@ -72,7 +77,7 @@ public class EditProfile extends AppCompatActivity {
                 ImageView imgView = (ImageView) findViewById(R.id.imageView3);
                 // Set the Image in ImageView after decoding the String
                 imgView.setImageBitmap(BitmapFactory
-                                .decodeFile(imgDecodableString));
+                        .decodeFile(imgDecodableString));
 
             } else {
                 Toast.makeText(this, "You haven't picked Image",
@@ -83,6 +88,7 @@ public class EditProfile extends AppCompatActivity {
         }
 
     }
+
 
 
 }
