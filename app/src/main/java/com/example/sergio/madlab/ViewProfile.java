@@ -11,6 +11,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.*;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.FileInputStream;
 
 public class ViewProfile extends AppCompatActivity {
 
@@ -32,6 +39,15 @@ public class ViewProfile extends AppCompatActivity {
 */
 
 
+    // Write a message to the database
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference("https://madlab34-b64ac.firebaseio.com");
+
+
+    myRef.setValue("Hello, World!");
+
+
+
 
 
     @Override
@@ -51,6 +67,23 @@ public class ViewProfile extends AppCompatActivity {
         textView_mail.setText(mail);
         TextView textView_bio = findViewById(R.id.bio_text);
         textView_bio.setText(bio);
+
+        /*
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        database.getReference("https://madlab34-b64ac.firebaseio.com/my/data");
+        */
+
+        /*
+        FileInputStream serviceAccount =
+                new FileInputStream("path/to/serviceAccountKey.json");
+
+        FirebaseOptions options = new FirebaseOptions.Builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setDatabaseUrl("https://madlab34-b64ac.firebaseio.com")
+                .build();
+
+        FirebaseApp.initializeApp(options);
+        */
     }
 
     @Override
