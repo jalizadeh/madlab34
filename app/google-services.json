@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "212798003886",
+    "firebase_url": "https://madlab34-b64ac.firebaseio.com",
+    "project_id": "madlab34-b64ac",
+    "storage_bucket": "madlab34-b64ac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212798003886:android:1286ed391ffbec7e",
+        "android_client_info": {
+          "package_name": "com.example.sergio.madlab"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "212798003886-afbbfvf2r8p95rik8q1jdss15ubl5a37.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sergio.madlab",
+            "certificate_hash": "d3f58e8ea17df04cae51fbbfb4a5cbf27c414f14"
+          }
+        },
+        {
+          "client_id": "212798003886-m9860at1mlh4ph3me48ns7kv55qdc166.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAx19vVyCzTCPtix_JWV70rMgj-Z2cfGp8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "212798003886-m9860at1mlh4ph3me48ns7kv55qdc166.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
