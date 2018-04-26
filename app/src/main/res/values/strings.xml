@@ -3,12 +3,12 @@
 
     <!-- VIEW PROFILE VIEW -->
     <string name="edit_icon_name">EditProfile</string>
-    <string name="name_title">Name</string>
-    <string name="name_value">(Empty)</string>
-    <string name="mail_title">Mail</string>
-    <string name="mail_value">(Empty)</string>
-    <string name="bio_title">Short bio</string>
-    <string name="bio_value">(Empty)</string>
+    <string name="name_title">Name:</string>
+    <string name="name_value"></string>
+    <string name="mail_title">Email:</string>
+    <string name="mail_value"></string>
+    <string name="bio_title">More:</string>
+    <string name="bio_value"></string>
 
     <!-- EDIT PROFILE VIEW -->
     <string name="load_image_button">Load image</string>
