@@ -14,4 +14,23 @@
     <string name="load_image_button">Load image</string>
     <string name="open_camera_button">Open camera</string>
 
+    <!-- Insert Book VIEW -->
+    <string name="book_isbn">ISBN</string>
+    <string name="load_isbn">Load</string>
+    <string name="book_title">Title</string>
+    <string name="book_author">Author(s)</string>
+    <string name="book_publisher">Publisher</string>
+    <string name="book_editYear">Edit Year</string>
+    <string name="book_genre">Genre</string>
+    <string-array name="book_genre_list">
+        <item>Science</item>
+        <item>Technology</item>
+        <item>Fiction</item>
+        <item>Mathematics</item>
+        <item>Computer</item>
+    </string-array>
+    <string name="book_tags">Tags</string>
+
+
+
 </resources>
