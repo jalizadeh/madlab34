@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">MADLab</string>
-    <string name="activity_viewProfile">MAD::34</string>
+    <string name="app_name">MAD::34</string>
+    <string name="activity_viewProfile">View Profile</string>
     <string name="activity_editProfile">Edit Profile</string>
     <string name="activity_insertBook">New Book</string>
     <string name="activity_showAllBooks">All Books</string>

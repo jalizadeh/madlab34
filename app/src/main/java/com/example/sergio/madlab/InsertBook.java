@@ -139,21 +139,27 @@ public class InsertBook extends AppCompatActivity {
 
 
         //create a new child with isbn as its unique ID
-        databaseIB = FirebaseDatabase.getInstance().getReference("Books").child(isbn);
+        if (isbn != null && isbn.length() > 0){
+            databaseIB = FirebaseDatabase.getInstance().getReference("Books").child(isbn);
 
-        databaseIB.child("title").setValue(title);
-        databaseIB.child("author").setValue(author);
-        databaseIB.child("publisher").setValue(publisher);
-        databaseIB.child("edityear").setValue(editYear);
-        databaseIB.child("genre").setValue(genre);
-        databaseIB.child("tags").setValue(tags);
+            databaseIB.child("title").setValue(title);
+            databaseIB.child("author").setValue(author);
+            databaseIB.child("publisher").setValue(publisher);
+            databaseIB.child("edityear").setValue(editYear);
+            databaseIB.child("genre").setValue(genre);
+            databaseIB.child("tags").setValue(tags);
 
-        //show all input
-        //Toast.makeText(this, isbn+"\n"+title+"\n"+author+"\n"+publisher+"\n"+editYear+"\n"+genre+"\n"+tags,Toast.LENGTH_SHORT).show();
+            //show all input
+            //Toast.makeText(this, isbn+"\n"+title+"\n"+author+"\n"+publisher+"\n"+editYear+"\n"+genre+"\n"+tags,Toast.LENGTH_SHORT).show();
 
-        Toast.makeText(this, "Book saved successfully!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Book saved successfully!",Toast.LENGTH_SHORT).show();
 
-        finish();
+            finish();
+        } else {
+            Toast.makeText(this, "ISBN is not valid.\nno data saved",Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
     }
 
 }

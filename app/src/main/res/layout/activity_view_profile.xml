@@ -83,17 +83,12 @@
                     android:text="@string/bio_value" />
 
                 <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="insert book"
                     android:id="@+id/btn_ib"
-                    android:onClick="openInsertBook"/>
-                <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="show all books"
-                    android:id="@+id/btn_sab"
-                    android:onClick="openShowAllBooks"/>
+                    android:layout_margin="16dp"
+                    android:onClick="openMyBooks"
+                    android:text="My Books" />
             </LinearLayout>
 
 

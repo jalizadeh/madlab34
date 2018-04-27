@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity
 
     DatabaseReference db;
     private RecyclerView mBookList;
-    EditText nameEditTxt, propTxt, descTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +57,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Hi", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "search...", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-
+        //once the activity is Created or Restarted, it will show all books
         showAllBooks();
 
         // SharedPreferences
@@ -137,6 +136,7 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -177,8 +178,31 @@ public class MainActivity extends AppCompatActivity
         };
 
         mBookList.setAdapter(firebaseRecyclerAdapter);
+        getUserProfile();
+    }
 
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        showAllBooks();
+        //getUserProfile();
+    }
+
+
+    public void showAllBooks(){
+        //shows all books
+        db = FirebaseDatabase.getInstance().getReference().child("Books");
+        db.keepSynced(true);
+
+        mBookList = (RecyclerView) findViewById(R.id.myrecycleview);
+        mBookList.hasFixedSize();
+        mBookList.setLayoutManager(new LinearLayoutManager(this));
+        //----
+    }
+
+
+    public void getUserProfile(){
         //read from database -> Users
         db = FirebaseDatabase.getInstance().getReference().child("Users");
         db.addValueEventListener(new ValueEventListener() {
@@ -217,24 +241,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        showAllBooks();
-    }
-
-
-    public void showAllBooks(){
-        //shows all books
-        db = FirebaseDatabase.getInstance().getReference().child("Books");
-        db.keepSynced(true);
-
-        mBookList = (RecyclerView) findViewById(R.id.myrecycleview);
-        mBookList.hasFixedSize();
-        mBookList.setLayoutManager(new LinearLayoutManager(this));
-        //----
-    }
-
     //Read and save each book data and create a separate view for it
     // prepare for CardView
     public static  class BookViewHolder extends RecyclerView.ViewHolder{
@@ -261,5 +267,11 @@ public class MainActivity extends AppCompatActivity
             descTxt.setText(genre);
         }
         */
+    }
+
+
+    public void viewProfile(View view){
+        Intent intent = new Intent(this, ViewProfile.class);
+        startActivity(intent);
     }
 }

@@ -82,7 +82,7 @@ public class ViewProfile extends AppCompatActivity {
                     dbBio = (String) messageSnapshot.child("bio").getValue();
                 }
                 //Toast.makeText(getApplicationContext(),dbName+'-'+dbEmail+'-'+dbBio,Toast.LENGTH_LONG).show();
-                Toast.makeText(getApplicationContext(),"db fetched successfully",Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(),"db fetched successfully",Toast.LENGTH_SHORT).show();
 
                 textView_name.setText(dbName);
                 textView_mail.setText(dbEmail);
@@ -151,15 +151,10 @@ public class ViewProfile extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void openInsertBook(View view){
-        Intent intent = new Intent(this, InsertBook.class);
-        startActivity(intent);
+
+    public void openMyBooks(View view){
+        //Intent intent = new Intent(this, InsertBook.class);
+        //startActivity(intent);
     }
 
-
-    public void openShowAllBooks(View view){
-        Intent intent = new Intent(this, ShowAllBooks.class);
-        //Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-    }
 }
