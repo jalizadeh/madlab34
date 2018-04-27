@@ -157,5 +157,9 @@ public class ViewProfile extends AppCompatActivity {
     }
 
 
-
+    public void openShowAllBooks(View view){
+        Intent intent = new Intent(this, ShowAllBooks.class);
+        //Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
 }
