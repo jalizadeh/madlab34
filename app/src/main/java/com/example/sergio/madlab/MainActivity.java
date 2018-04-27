@@ -199,6 +199,8 @@ public class MainActivity extends AppCompatActivity
         mBookList.hasFixedSize();
         mBookList.setLayoutManager(new LinearLayoutManager(this));
         //----
+
+
     }
 
 
@@ -241,15 +243,26 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+
     //Read and save each book data and create a separate view for it
     // prepare for CardView
     public static  class BookViewHolder extends RecyclerView.ViewHolder{
         View mView;
+        //Item currentItem;
 
-        public BookViewHolder(View itemView){
+        public BookViewHolder(final View itemView){
             super(itemView);
             mView = itemView;
+
+            mView.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) {
+                    //...
+                }
+            });
+
         }
+
+
 
         public void setTitle(String title){
             TextView nameTxt = (TextView)mView.findViewById(R.id.cv_bookTitle);
@@ -268,6 +281,7 @@ public class MainActivity extends AppCompatActivity
         }
         */
     }
+
 
 
     public void viewProfile(View view){
