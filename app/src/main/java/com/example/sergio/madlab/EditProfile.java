@@ -85,19 +85,18 @@ public class EditProfile extends AppCompatActivity {
         intent.putExtra("bio", bio);
 
         //connect database
-        database = FirebaseDatabase.getInstance().getReference("Users").child("main").child("name");
-        database.setValue(name);
-        database = FirebaseDatabase.getInstance().getReference("Users/main").child("email");
-        database.setValue(mail);
-        database = FirebaseDatabase.getInstance().getReference("Users/main").child("bio");
-        database.setValue(bio);
+        database = FirebaseDatabase.getInstance().getReference().child("Users/main");
+        database.child("name").setValue(name);
+        database.child("email").setValue(mail);
+        database.child("bio").setValue(bio);
 
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
-        startActivity(intent);
+        finish();
+        //startActivity(intent);
     }
 
     public void openGallery(View view) {

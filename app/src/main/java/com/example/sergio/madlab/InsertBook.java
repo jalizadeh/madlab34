@@ -140,6 +140,7 @@ public class InsertBook extends AppCompatActivity {
 
         //create a new child with isbn as its unique ID
         databaseIB = FirebaseDatabase.getInstance().getReference("Books").child(isbn);
+
         databaseIB.child("title").setValue(title);
         databaseIB.child("author").setValue(author);
         databaseIB.child("publisher").setValue(publisher);
