@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">MADLab</string>
+    <string name="activity_viewProfile">Profile</string>
+    <string name="activity_editProfile">Edit Profile</string>
+    <string name="activity_insertBook">New Book</string>
+    <string name="activity_showAllBooks">All Books</string>
 
     <!-- VIEW PROFILE VIEW -->
     <string name="edit_icon_name">EditProfile</string>

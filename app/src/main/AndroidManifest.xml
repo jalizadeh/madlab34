@@ -18,20 +18,33 @@
         android:theme="@style/AppTheme"
         >
 
-        <activity android:name=".ViewProfile">
+        <activity
+            android:name=".ViewProfile"
+            android:label="@string/activity_viewProfile">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".EditProfile" android:parentActivityName=".ViewProfile">
+
+        <activity
+            android:name=".EditProfile"
+            android:parentActivityName=".ViewProfile"
+            android:label="@string/activity_editProfile">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ViewProfile" />
+                android:value=".ViewProfile"
+                />
         </activity>
+
         <activity
             android:name=".InsertBook"
-            android:label="@string/app_name">
+            android:label="@string/activity_insertBook">
+        </activity>
+
+        <activity
+            android:name=".ShowAllBooks"
+            android:label="@string/activity_showAllBooks">
         </activity>
     </application>
 
