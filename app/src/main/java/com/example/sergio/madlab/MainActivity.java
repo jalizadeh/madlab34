@@ -45,9 +45,11 @@ public class MainActivity extends AppCompatActivity
     DatabaseReference db;
     private RecyclerView mBookList;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
 
 
         //once the activity is Created or Restarted, it will show all books
@@ -97,6 +100,7 @@ public class MainActivity extends AppCompatActivity
             //textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
         }
         */
+
 
 
 
@@ -163,33 +167,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseRecyclerAdapter<Book, ShowAllBooks.BookViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, ShowAllBooks.BookViewHolder>
-                (Book.class, R.layout.book_cardview, ShowAllBooks.BookViewHolder.class, db) {
-            @Override
-            protected void populateViewHolder(ShowAllBooks.BookViewHolder viewHolder, Book book, int position) {
-                viewHolder.setTitle(book.getTitle());
-                //viewHolder.setAtuthor(book.getAuthor());
-                //viewHolder.setGenre(book.getGenre());
-            }
-        };
-
-        mBookList.setAdapter(firebaseRecyclerAdapter);
-        getUserProfile();
-    }
-
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        showAllBooks();
-        //getUserProfile();
-    }
-
-
     public void showAllBooks(){
         //shows all books
         db = FirebaseDatabase.getInstance().getReference().child("Books");
@@ -199,12 +176,11 @@ public class MainActivity extends AppCompatActivity
         mBookList.hasFixedSize();
         mBookList.setLayoutManager(new LinearLayoutManager(this));
         //----
-
-
     }
 
 
     public void getUserProfile(){
+
         //read from database -> Users
         db = FirebaseDatabase.getInstance().getReference().child("Users");
         db.addValueEventListener(new ValueEventListener() {
@@ -219,13 +195,16 @@ public class MainActivity extends AppCompatActivity
                 //Toast.makeText(getApplicationContext(),"db fetched successfully",Toast.LENGTH_SHORT).show();
 
 
+
                 //nav header
-                tvNHName = findViewById(R.id.nav_header_title);
-                tvNHMail = findViewById(R.id.nav_header_mail);
+                tvNHName = (TextView)findViewById(R.id.nav_header_title);
+                tvNHMail = (TextView)findViewById(R.id.nav_header_mail);
+
 
                 tvNHName.setText(dbName);
                 tvNHMail.setText(dbEmail);
                 //textView_bio.setText(dbBio);
+
 
                 //save the last data if any change happens
                 editor = profile.edit();
@@ -241,6 +220,11 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(getApplicationContext(),"db fetch failed",Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        //tvNHName.setText("hi");
+        //tvNHMail.setText(profile.getString("mail", tvNHMail.getText().toString()));
+        //textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
     }
 
 
@@ -288,4 +272,36 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, ViewProfile.class);
         startActivity(intent);
     }
+
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseRecyclerAdapter<Book, ShowAllBooks.BookViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, ShowAllBooks.BookViewHolder>
+                (Book.class, R.layout.book_cardview, ShowAllBooks.BookViewHolder.class, db) {
+            @Override
+            protected void populateViewHolder(ShowAllBooks.BookViewHolder viewHolder, Book book, int position) {
+                viewHolder.setTitle(book.getTitle());
+                //viewHolder.setAtuthor(book.getAuthor());
+                //viewHolder.setGenre(book.getGenre());
+            }
+        };
+
+        mBookList.setAdapter(firebaseRecyclerAdapter);
+
+        getUserProfile();
+    }
+
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        showAllBooks();
+        //getUserProfile();
+    }
+
+
+
 }

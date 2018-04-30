@@ -1,6 +1,7 @@
 package com.example.sergio.madlab;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
@@ -26,6 +27,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 
 public class EditProfile extends AppCompatActivity {
 
@@ -34,7 +38,11 @@ public class EditProfile extends AppCompatActivity {
     private static int RESULT_LOAD_IMG = 1;
     private  static  int REQUEST_IMAGE_CAPTURE =1;
     private ImageView imageView;
+    private Uri imageUri; //save image uri
     String imgDecodableString;
+
+    private SharedPreferences profile;
+    private SharedPreferences.Editor editor;
 
     private DatabaseReference db;
 
@@ -51,6 +59,9 @@ public class EditProfile extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // SharedPreferences
+        profile = this.getSharedPreferences("profile", MODE_PRIVATE);
 
         setContentView(R.layout.activity_edit_profile);
         this.imageView = (ImageView)this.findViewById(R.id.imageView);
@@ -100,16 +111,6 @@ public class EditProfile extends AppCompatActivity {
         });
     }
 
-    public void saveData(MenuItem menuItem) {
-
-        //connect and save new data into database
-        db = FirebaseDatabase.getInstance().getReference().child("Users").child("main");
-        db.child("name").setValue(editText_name.getText().toString());
-        db.child("email").setValue(editText_mail.getText().toString());
-        db.child("bio").setValue(editText_bio.getText().toString());
-        finish();
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -118,43 +119,45 @@ public class EditProfile extends AppCompatActivity {
     }
 
     public void openGallery(View view) {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
     }
+
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
-        try {
-            // When an Image is picked
-            if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK ) {
-                /*Sergio
-                // Get the Image from data
-                Uri selectedImage = data.getData();
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
-                // Get the cursor
-                Cursor cursor = getContentResolver().query(selectedImage,
-                        filePathColumn, null, null, null);
-                // Move to first row
-                cursor.moveToFirst();
+    protected void onActivityResult(int reqCode, int resultCode, Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            try {
+                imageUri = data.getData();
+                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                imageView.setImageBitmap(selectedImage);
 
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                imgDecodableString = cursor.getString(columnIndex);
-                cursor.close();
-                ImageView imgView = (ImageView) findViewById(R.id.imageView3);
-                // Set the Image in ImageView after decoding the String
-                imgView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString));
-                */
-
-                Bundle extras = data.getExtras();
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
-                imageView.setImageBitmap(imageBitmap);
-            } else {
-                Toast.makeText(this, "You haven't picked Image",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, imageUri.toString(), Toast.LENGTH_LONG).show();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+
+        }else {
+            Toast.makeText(this, "You haven't picked Image",Toast.LENGTH_LONG).show();
         }
     }
+
+
+
+
+    public void saveData(MenuItem menuItem) {
+        //connect and save new data into database
+        db = FirebaseDatabase.getInstance().getReference().child("Users").child("main");
+        db.child("name").setValue(editText_name.getText().toString());
+        db.child("email").setValue(editText_mail.getText().toString());
+        db.child("bio").setValue(editText_bio.getText().toString());
+        db.child("image").setValue(imageUri.toString());
+        finish();
+    }
+
 
 }

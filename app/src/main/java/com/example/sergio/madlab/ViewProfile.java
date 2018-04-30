@@ -3,6 +3,7 @@ package com.example.sergio.madlab;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Image;
+import android.net.Uri;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.FileInputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,10 +35,13 @@ public class ViewProfile extends AppCompatActivity {
     private String dbName="";
     private String dbEmail="";
     private String dbBio="";
+    private String dbImage="";
+
 
     private TextView textView_name;
     private TextView textView_mail;
     private TextView textView_bio;
+    private ImageView imageView;
 
     private SharedPreferences profile;
     private SharedPreferences.Editor editor;
@@ -56,19 +61,22 @@ public class ViewProfile extends AppCompatActivity {
         textView_name = findViewById(R.id.name_text);
         textView_mail = findViewById(R.id.mail_text);
         textView_bio = findViewById(R.id.bio_text);
+        imageView = findViewById(R.id.imageView);
 
         // load user`s data from local database
         // may change in future
+        /*
         Intent intent = getIntent();
         if (intent.getExtras() != null) {
             textView_name.setText(intent.getStringExtra("name"));
             textView_mail.setText(intent.getStringExtra("mail"));
             textView_bio.setText(intent.getStringExtra("bio"));
         } else {
+        */
             textView_name.setText(profile.getString("name", textView_name.getText().toString()));
             textView_mail.setText(profile.getString("mail", textView_mail.getText().toString()));
             textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
-        }
+        //}
 
 
         //read from database -> Users
@@ -80,6 +88,7 @@ public class ViewProfile extends AppCompatActivity {
                     dbName = (String) messageSnapshot.child("name").getValue();
                     dbEmail = (String) messageSnapshot.child("email").getValue();
                     dbBio = (String) messageSnapshot.child("bio").getValue();
+                    dbImage = (String) messageSnapshot.child("image").getValue();
                 }
                 //Toast.makeText(getApplicationContext(),dbName+'-'+dbEmail+'-'+dbBio,Toast.LENGTH_LONG).show();
                 //Toast.makeText(getApplicationContext(),"db fetched successfully",Toast.LENGTH_SHORT).show();
@@ -87,6 +96,11 @@ public class ViewProfile extends AppCompatActivity {
                 textView_name.setText(dbName);
                 textView_mail.setText(dbEmail);
                 textView_bio.setText(dbBio);
+
+                Uri imageUri = Uri.parse(dbImage);
+                imageView.setImageURI(null);
+                imageView.setImageURI(imageUri);
+
 
                 //save the last data if any change happens
                 editor = profile.edit();
