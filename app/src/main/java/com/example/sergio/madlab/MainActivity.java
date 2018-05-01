@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,11 +22,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -42,6 +50,7 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences profile;
     private SharedPreferences.Editor editor;
 
+    private FirebaseAuth firebaseAuth;
     DatabaseReference db;
     private RecyclerView mBookList;
 
@@ -147,7 +156,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_send) {
+        if (id == R.id.nav_settings) {
             //
         } else if (id == R.id.nav_insert_book) {
             Intent intent = new Intent(this, InsertBook.class);
@@ -157,8 +166,11 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
         } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_share) {
-
+        } else if (id == R.id.nav_sign_out) {
+            firebaseAuth.getInstance().signOut();
+            finish();
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -240,7 +252,7 @@ public class MainActivity extends AppCompatActivity
 
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
-                    //...
+                    Toast.makeText(v.getContext(),"db fetch failed",Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -305,3 +317,17 @@ public class MainActivity extends AppCompatActivity
 
 
 }
+
+
+
+/*
+private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
+                    "User ID: " + user.getUid());
+        } else {
+            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
+                    "Error: sign in failed.");
+        }
+}
+ */
