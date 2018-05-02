@@ -1,107 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EditProfile"
-    android:orientation="vertical">
+    tools:context=".EditProfile">
+
+
+    <Button
+        android:id="@+id/btnSelectImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:text="Load Picture"
+        android:src="@android:drawable/ic_menu_gallery" />
+
+
+    <ImageView
+        android:id="@+id/imgView"
+        android:layout_width="match_parent"
+        android:layout_height="193dp"
+        android:layout_weight="1"></ImageView>
+
+
+
 
     <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
-        <ImageView
-            android:id="@+id/imageView3"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            app:srcCompat="@android:color/darker_gray" />
-
-        <Button
-            android:id="@+id/load_image_button"
+        <TextView
+            android:id="@+id/name_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:onClick="openGallery"
-            android:text="@string/load_image_button" />
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="212dp"
+            android:text="@string/name_title" />
 
-        <Button
-            android:id="@+id/open_camera_button"
+        <EditText
+            android:id="@+id/editText_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/load_image_button"
-            android:layout_alignParentTop="true"
-            android:layout_marginTop="50dp"
-            android:text="@string/open_camera_button" />
+            android:layout_alignStart="@+id/name_title"
+            android:layout_below="@+id/name_title"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/mail_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editText_name"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="40dp"
+            android:text="@string/mail_title" />
+
+        <EditText
+            android:id="@+id/editText_mail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/name_title"
+            android:layout_below="@+id/mail_title"
+            android:ems="10"
+            android:inputType="textEmailAddress" />
+
+        <TextView
+            android:id="@+id/bio_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editText_mail"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="40dp"
+            android:text="@string/bio_title" />
+
+        <EditText
+            android:id="@+id/editText_bio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/name_title"
+            android:layout_below="@+id/bio_title"
+            android:ems="10"
+            android:inputType="textMultiLine" />
 
     </RelativeLayout>
 
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/name_title"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/left_margin"
-                android:layout_marginTop="20dp"
-                android:text="@string/name_title" />
-
-            <EditText
-                android:id="@+id/editText_name"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/margin"
-                android:layout_below="@+id/name_title"
-                android:ems="10"
-                android:inputType="textPersonName" />
-
-            <TextView
-                android:id="@+id/mail_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/editText_name"
-                android:layout_marginLeft="@dimen/left_margin"
-                android:layout_marginTop="10dp"
-                android:text="@string/mail_title" />
-
-            <EditText
-                android:id="@+id/editText_mail"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/margin"
-                android:layout_below="@+id/mail_title"
-                android:ems="10"
-                android:inputType="textEmailAddress" />
-
-            <TextView
-                android:id="@+id/bio_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/editText_mail"
-                android:layout_marginLeft="@dimen/left_margin"
-                android:layout_marginTop="10dp"
-                android:text="@string/bio_title" />
-
-            <EditText
-                android:id="@+id/editText_bio"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/margin"
-                android:layout_below="@+id/bio_title"
-                android:ems="10"
-                android:inputType="textMultiLine" />
-
-        </LinearLayout>
-
-    </ScrollView>
-
-</LinearLayout>
+</RelativeLayout>
