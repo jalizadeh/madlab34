@@ -79,7 +79,6 @@
                     android:id="@+id/editText_name"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignStart="@+id/name_title"
                     android:layout_below="@+id/name_title"
                     android:ems="10"
                     android:layout_margin="@dimen/margin"
@@ -89,7 +88,6 @@
                     android:id="@+id/mail_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/editText_name"
                     android:layout_marginLeft="@dimen/left_margin"
                     android:layout_marginTop="40dp"
                     android:text="@string/mail_title" />
@@ -98,8 +96,8 @@
                     android:id="@+id/editText_mail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignStart="@+id/name_title"
-                    android:layout_below="@+id/mail_title"
+
+
                     android:ems="10"
                     android:layout_margin="@dimen/margin"
                     android:inputType="textEmailAddress" />
@@ -108,7 +106,6 @@
                     android:id="@+id/bio_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/editText_mail"
                     android:layout_marginLeft="@dimen/left_margin"
                     android:layout_marginTop="40dp"
                     android:text="@string/bio_title" />
@@ -117,8 +114,6 @@
                     android:id="@+id/editText_bio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignStart="@+id/name_title"
-                    android:layout_below="@+id/bio_title"
                     android:ems="10"
                     android:layout_margin="@dimen/margin"
                     android:inputType="textMultiLine" />

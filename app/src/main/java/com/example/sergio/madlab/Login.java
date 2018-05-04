@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,10 +35,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
@@ -53,6 +59,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     private EditText txt_password;
     private FirebaseAuth firebaseAuth;
     private ProgressDialog progressDialog;
+
+    private static final String TAG_CREDENTIAL = "Credentials";
+    private static final String TAG_ERROR = "Error";
 
 
     @Override
@@ -78,6 +87,37 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         mBtSignup.setOnClickListener((View.OnClickListener) this);
 
 
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        ArrayList<String> arrayList = new ArrayList<>();
+        arrayList.add(txt_email.getText().toString());
+        arrayList.add(txt_password.getText().toString());
+        outState.putStringArrayList(TAG_CREDENTIAL, arrayList);
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if(currentUser != null){
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        ArrayList<String> arrayList = savedInstanceState.getStringArrayList(TAG_CREDENTIAL);
+        if (arrayList != null) {
+            txt_email.setText(arrayList.get(0));
+            txt_password.setText(arrayList.get(1));
+        }
     }
 
     @Override
@@ -109,17 +149,35 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-
                             Toast.makeText(Login.this, "Log in Successful... ", Toast.LENGTH_SHORT).show();
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             finish();
                             Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
                             startActivity(mainActivity);
                         } else
-                            Toast.makeText(getApplicationContext(), "Log in failed... please try again", Toast.LENGTH_SHORT).show();
+                            try {
+                                throw task.getException();
+                            } catch(FirebaseAuthInvalidCredentialsException e) {
+                                txt_password.setError(getString(R.string.error_invalid_password));
+                                txt_password.requestFocus();
+                            } catch (FirebaseAuthInvalidUserException e){
+                                txt_email.setError(getString(R.string.error_invalid_email));
+                                txt_email.requestFocus();;
+                            } catch (FirebaseNetworkException e){
+                                Toast.makeText(Login.this, "Network error", Toast.LENGTH_SHORT).show();
+                            } catch(Exception e) {
+                                Toast.makeText(Login.this, "Some problem", Toast.LENGTH_SHORT).show();
+                                Log.e(TAG_ERROR, e.getMessage());
+                            }
 
                     }
                 });
     }
 
+
+
+    //@Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(this,"Login error. Maybe there is no connection",Toast.LENGTH_SHORT).show();
+    }
 }

@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".EditProfile"
     android:orientation="vertical">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_editProfile"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            app:title="Edit Profile" />
+
+    </android.support.design.widget.AppBarLayout>
+
 
     <ScrollView
         android:layout_width="match_parent"
@@ -40,8 +54,7 @@
                     android:id="@+id/btn_openCamera"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignEnd="@+id/load_image_button"
-                    android:layout_alignParentTop="true"
+                    android:layout_alignLeft="@+id/load_image_button"
                     android:layout_marginTop="50dp"
                     android:onClick="openCamera"
                     android:text="@string/open_camera_button" />
@@ -51,60 +64,61 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/margin">
 
-                <TextView
-                    android:id="@+id/name_title"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/left_margin"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/name_title" />
 
-                <EditText
-                    android:id="@+id/editText_name"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/margin"
-                    android:layout_below="@+id/name_title"
-                    android:ems="10"
-                    android:inputType="textPersonName" />
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/mail_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/editText_name"
-                    android:layout_marginLeft="@dimen/left_margin"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/mail_title" />
+                    <AutoCompleteTextView
+                        android:id="@+id/editText_name"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/margin"
+                        android:ems="10"
+                        android:hint="@string/hint_name"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:inputType="textPersonName" />
 
-                <EditText
+                </android.support.design.widget.TextInputLayout>
+
+
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <AutoCompleteTextView
                     android:id="@+id/editText_mail"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin"
-                    android:layout_below="@+id/mail_title"
+                    android:hint="@string/hint_email"
+                    android:maxLines="1"
+                    android:singleLine="true"
                     android:ems="10"
                     android:inputType="textEmailAddress" />
+                </android.support.design.widget.TextInputLayout>
 
-                <TextView
-                    android:id="@+id/bio_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/editText_mail"
-                    android:layout_marginLeft="@dimen/left_margin"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/bio_title" />
 
-                <EditText
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <AutoCompleteTextView
                     android:id="@+id/editText_bio"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/margin"
-                    android:layout_below="@+id/bio_title"
                     android:ems="10"
+                    android:hint="Biography"
+                    android:singleLine="true"
                     android:inputType="textMultiLine" />
+            </android.support.design.widget.TextInputLayout>
 
             </LinearLayout>
         </LinearLayout>

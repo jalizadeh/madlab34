@@ -9,7 +9,6 @@
     <item
         android:id="@+id/action_edit"
         android:icon="@drawable/ic_edit_black_24dp"
-        android:onClick="editProfile"
         android:title="@string/edit_icon_name"
         app:showAsAction="always" />
 

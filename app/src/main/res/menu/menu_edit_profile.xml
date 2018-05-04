@@ -2,14 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".EditProfile"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    tools:context=".EditProfile">
 
     <item
         android:id="@+id/action_done"
         android:icon="@drawable/ic_done_black_24dp"
-        android:onClick="saveData"
         android:title="@string/edit_icon_name"
         app:showAsAction="always" />
 

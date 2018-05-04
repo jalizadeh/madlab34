@@ -34,6 +34,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.example.sergio.madlab.User;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -47,23 +63,31 @@ public class MainActivity extends AppCompatActivity
     private TextView tvNHName;
     private TextView tvNHMail;
 
+    private RecyclerView mBookList;
+
+    private String userEmail;
+    private User user;
+
     private SharedPreferences profile;
     private SharedPreferences.Editor editor;
 
     private FirebaseAuth firebaseAuth;
-    DatabaseReference db;
-    private RecyclerView mBookList;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference db, ref;
+    private static final String filename = "profileImage.jpeg";
+    private static final String TAG = "DatabaseError";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
+
+        //Set toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        //set floating button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,17 +98,25 @@ public class MainActivity extends AppCompatActivity
         });
 
 
+        //set drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        //set navigation
+        //View header = ((NavigationView)findViewById(R.id.nav_view)).getHeaderView(0);
+        //tvNHName = header.findViewById(R.id.nav_header_title);
+        //tvNHMail = header.findViewById(R.id.nav_header_mail);
+        //tvNHName.setText("");
+        //tvNHMail.setText("");
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        //navigationView.setNavigationItemSelectedListener(this);
 
-
-
+//        tvNHName.setText("");
+//        tvNHMail.setText("");
         //once the activity is Created or Restarted, it will show all books
         showAllBooks();
 
@@ -112,10 +144,48 @@ public class MainActivity extends AppCompatActivity
 
 
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        db = FirebaseDatabase.getInstance().getReference();
+        ref = db.child("users");
 
+        //if the user token is not in the local storage
+        if(firebaseAuth.getCurrentUser() == null) {
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+        }
+
+
+        //tvNHName = (TextView) findViewById(R.id.nav_header_title) ;
+        //tvNHMail = (TextView)findViewById(R.id.nav_header_mail);
+
+
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        userEmail = firebaseUser.getEmail().replace(",",",,").replace(".", ",");
 
 
     }
+
+
+
+    private void getUserProfile(){
+        ref.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user = dataSnapshot.getValue(User.class);
+
+                tvNHName = (TextView) findViewById(R.id.nav_header_title);
+                tvNHMail = (TextView) findViewById(R.id.nav_header_mail);
+
+                tvNHName.setText(user.getUsername());
+                tvNHMail.setText(user.getEmail());
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG, "onCancelled", databaseError.toException());
+            }
+        });
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -190,54 +260,6 @@ public class MainActivity extends AppCompatActivity
         //----
     }
 
-
-    public void getUserProfile(){
-
-        //read from database -> Users
-        db = FirebaseDatabase.getInstance().getReference().child("Users");
-        db.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-                    dbName = (String) messageSnapshot.child("name").getValue();
-                    dbEmail = (String) messageSnapshot.child("email").getValue();
-                    dbBio = (String) messageSnapshot.child("bio").getValue();
-                }
-                //Toast.makeText(getApplicationContext(),dbName+'-'+dbEmail+'-'+dbBio,Toast.LENGTH_LONG).show();
-                //Toast.makeText(getApplicationContext(),"db fetched successfully",Toast.LENGTH_SHORT).show();
-
-
-
-                //nav header
-                tvNHName = (TextView)findViewById(R.id.nav_header_title);
-                tvNHMail = (TextView)findViewById(R.id.nav_header_mail);
-
-
-                tvNHName.setText(dbName);
-                tvNHMail.setText(dbEmail);
-                //textView_bio.setText(dbBio);
-
-
-                //save the last data if any change happens
-                editor = profile.edit();
-                editor.putString("name", dbName);
-                editor.putString("mail", dbEmail);
-                editor.putString("bio", dbBio);
-                editor.apply();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Toast.makeText(getApplicationContext(),"db fetch failed",Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
-        //tvNHName.setText("hi");
-        //tvNHMail.setText(profile.getString("mail", tvNHMail.getText().toString()));
-        //textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
-    }
 
 
     //Read and save each book data and create a separate view for it

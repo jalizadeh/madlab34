@@ -1,15 +1,22 @@
 package com.example.sergio.madlab;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.net.Uri;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -18,17 +25,202 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+
+
+public class ViewProfile extends AppCompatActivity {
+
+    private static final String filename = "profileImage.jpeg";
+    private static final String TAG = "DatabaseError";
+
+    //Toolbar
+    Toolbar toolbar;
+
+    //TextViews
+    private TextView name;
+    private TextView mail;
+    private TextView bio;
+
+    //SharedPreferences
+    private SharedPreferences preferences;
+    private FirebaseUser authUser;
+    private DatabaseReference database;
+    private DatabaseReference ref;
+    private StorageReference storageRef;
+    private User user;
+    private String email;
+
+    private ImageView profileImage;
+    private ProgressDialog progressDialog;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_view_profile);
+
+        database = FirebaseDatabase.getInstance().getReference();
+        ref = database.child("users");
+        storageRef = FirebaseStorage.getInstance().getReference();
+        preferences = getSharedPreferences("Info", Context.MODE_PRIVATE);
+
+        getTextViews();
+
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_viewProfile);
+        setSupportActionBar(toolbar);
+
+
+        progressDialog = new ProgressDialog(this);
+
+
+        authUser = FirebaseAuth.getInstance().getCurrentUser();
+        email = authUser.getEmail().replace(",",",,").replace(".", ",");
+        getUserReference();
+        profileImage = (ImageView) findViewById(R.id.imageView);
+        setImageView();
+
+
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        setImageView();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getUserReference();
+        setImageView();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_view_profile, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_edit:
+                //Edit user profile
+                Intent edit = new Intent(ViewProfile.this, EditProfile.class);
+                startActivity(edit);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+
+    private void setImageView() {
+        downloadToLocalFile(storageRef.child("images").child(email).child("profile image"));
+    }
+
+    //Get all the text views
+    private void getTextViews(){
+        name = (TextView)findViewById(R.id.name_text);
+        mail = (TextView)findViewById(R.id.mail_text);
+        bio = (TextView)findViewById(R.id.bio_text);
+    }
+
+    //Sel all the texts
+    private void setTexts(){
+        name.setText(user.getUsername());
+        mail.setText(user.getEmail());
+        bio.setText(user.getBio());
+    }
+
+    private void getUserReference(){
+        ref.child(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user = dataSnapshot.getValue(User.class);
+                setTexts();
+                setTitle(user.getUsername());
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG, "onCancelled", databaseError.toException());
+            }
+        });
+    }
+
+    private void downloadToLocalFile(StorageReference fileRef) {
+        if (fileRef != null) {
+            progressDialog.setTitle(getString(R.string.downloading));
+            progressDialog.setMessage(null);
+            progressDialog.show();
+
+            try {
+                final File localFile = File.createTempFile("profileImage", "jpeg");
+
+                fileRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                        profileImage.setImageBitmap(bmp);
+                        progressDialog.dismiss();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        progressDialog.dismiss();
+                        Toast.makeText(ViewProfile.this, R.string.profile_not_exists, Toast.LENGTH_LONG).show();
+                    }
+                }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        // progress percentage
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+
+                        // percentage in progress dialog
+                        progressDialog.setMessage(getString(R.string.downloaded) + ((int) progress) + getString(R.string.perc));
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Toast.makeText(ViewProfile.this, R.string.profile_not_exists, Toast.LENGTH_LONG).show();
+        }
+    }
+}
+
+
+
+/*
 public class ViewProfile extends AppCompatActivity {
 
     //retrieved data from database
@@ -65,14 +257,7 @@ public class ViewProfile extends AppCompatActivity {
 
         // load user`s data from local database
         // may change in future
-        /*
-        Intent intent = getIntent();
-        if (intent.getExtras() != null) {
-            textView_name.setText(intent.getStringExtra("name"));
-            textView_mail.setText(intent.getStringExtra("mail"));
-            textView_bio.setText(intent.getStringExtra("bio"));
-        } else {
-        */
+
             textView_name.setText(profile.getString("name", textView_name.getText().toString()));
             textView_mail.setText(profile.getString("mail", textView_mail.getText().toString()));
             textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
@@ -172,3 +357,4 @@ public class ViewProfile extends AppCompatActivity {
     }
 
 }
+*/

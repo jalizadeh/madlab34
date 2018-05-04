@@ -62,16 +62,122 @@
     <string name="title_activity_register">Sign in</string>
 
     <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
+    <string name="hint_name">Name</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_password_confirm">Repeat Password</string>
+    <string name="hint_city">City</string>
     <string name="action_sign_in">Sign in</string>
     <string name="action_sign_up">Sign up</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
+    <string name="error_invalid_name">The name is not valid</string>
     <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_invalid_repeat_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <string name="success">Success</string>
+    <string name="register_success">Registered successfully</string>
+    <string name="go_to_dashboard">Go to app</string>
+    <string name="msg">Please, enable all permissions</string>
+
+
+
+
+
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_settings">Settings</string>
+
+    <string name="login_page">Login Page</string>
+    <string name="signup_page">Sign Up</string>
+    <string name="forgot_page">Forgot Password</string>
+
+    <string name="enter_your_email">Enter your email</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="repeat_your_password">Repeat your password</string>
+    <string name="enter_your_displayed_name">Enter your displayed name</string>
+    <string name="enter_your_city">Enter your City</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="or">OR</string>
+    <string name="sign_up">Sign Up</string>
+
+    <string name="logout">Logout</string>
+    <string name="login">Login</string>
+    <string name="reset_password">Reset password</string>
+    <string name="register">Register</string>
+    <string name="back">Back</string>
+
+    <string name="valid_email">We have sent password to email:</string>
+    <string name="not_valid_email">Insert a valid email</string>
+    <string name="password_instruction">We just need your registered email to sent your password reset instructions</string>
+
+    <string name="auth_failed">Authentication Failed</string>
+    <string name="error_network">Please, check your internet connection</string>
+    <string name="error_weak_password">Password too weak</string>
+    <string name="error_user_exists">User already exists</string>
+    <string name="error_invalid_city">Invalid city</string>
+    <string name="something_wrong">Something went wrong</string>
+    <string name="incorrect_password">Incorrect password</string>
+
+    <!-- New strings -->
+    <string name="isbn_code">ISBN Code</string>
+    <string name="author">Author</string>
+    <string name="title">Title</string>
+    <string name="retrieve_infos">Retrieve Infos</string>
+    <string name="scan">Scan</string>
+    <string name="publisher">Publisher</string>
+    <string name="edition_year">Edition Year</string>
+    <string name="condition">Condition</string>
+    <string name="upload_a_photo_to_better_document_the_book_condition">Upload a photo to better document the book condition</string>
+    <string name="share_your_book">SHARE YOUR BOOK</string>
+
+    <string name="permission_msg">Please enable the permission</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="enable">ENABLE</string>
+    <string name="grant">GRANT</string>
+    <string name="no_publisher">No Publisher Found</string>
+    <string name="no_ed_year">No Published Year Found</string>
+    <string name="no_found">Not Founded</string>
+    <string name="action_edit">Edit</string>
+    <string name="email">Email</string>
+    <string name="short_bio">Short Bio</string>
+    <string name="no_bio">No bio</string>
+    <string name="mail">Mail</string>
+    <string name="name">Name</string>
+    <string name="edit_title">Edit your profile</string>
+    <string name="name_insert">Insert your name</string>
+    <string name="mail_insert">Insert your mail</string>
+    <string name="action_save">Save</string>
+    <string name="folder_error">Folder error</string>
+    <string name="profile_image">Profile image</string>
+    <string name="search_info">Search info…</string>
+    <string name="no_data">No data</string>
+    <string name="to_book_scan">To Book Scan</string>
+    <string name="to_profile">To Profile</string>
+    <string name="import_isbn">Import</string>
+    <string name="scan_your_isbn_code">Scan Your ISBN Code</string>
+    <string name="upload">Upload!</string>
+    <string name="profile_not_exists">Profile image doesn\'t exists</string>
+    <string name="perc">%…</string>
+    <string name="uploaded">Uploaded</string>
+    <string name="uploading">Uploading…</string>
+    <string name="isbn_missing">ISBN Code missing</string>
+    <string name="author_missing">Author missing</string>
+    <string name="title_missing">Title missing</string>
+    <string name="publ_missing">Publisher missing</string>
+    <string name="year_missing">Publisher Year missing</string>
+    <string name="condition_missing">Condition missing</string>
+    <string name="downloaded">Downloaded</string>
+    <string name="downloading">Downloading…</string>
+    <string name="error_login">Login error</string>
+
+
 </resources>
