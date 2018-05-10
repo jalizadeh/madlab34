@@ -157,7 +157,7 @@ public class ViewProfile extends AppCompatActivity {
 
     //Sel all the texts
     private void setTexts(){
-        name.setText(user.getUsername());
+        name.setText(user.getName());
         mail.setText(user.getEmail());
         bio.setText(user.getBio());
     }
@@ -168,7 +168,7 @@ public class ViewProfile extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
                 setTexts();
-                setTitle(user.getUsername());
+                setTitle(user.getName());
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {

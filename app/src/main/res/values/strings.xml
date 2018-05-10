@@ -65,7 +65,7 @@
     <string name="hint_name">Name</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
-    <string name="hint_password_confirm">Repeat Password</string>
+    <string name="hint_password_confirm">Confirm Password</string>
     <string name="hint_city">City</string>
     <string name="action_sign_in">Sign in</string>
     <string name="action_sign_up">Sign up</string>
@@ -84,6 +84,12 @@
     <string name="register_success">Registered successfully</string>
     <string name="go_to_dashboard">Go to app</string>
     <string name="msg">Please, enable all permissions</string>
+
+
+
+
+    <!--errors-->
+
 
 
 

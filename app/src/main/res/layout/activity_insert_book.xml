@@ -90,7 +90,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:baselineAligned="true"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginRight="@dimen/right_margin">
 
                     <android.support.design.widget.TextInputLayout
                         android:layout_width="match_parent"
@@ -104,7 +105,6 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@+id/isbn"
                             android:layout_margin="@dimen/margin"
-
                             android:ems="10"
                             android:hint="ISBN"
                             android:inputType="number"
@@ -113,11 +113,19 @@
                     </android.support.design.widget.TextInputLayout>
 
                     <Button
-                        android:id="@+id/btn_book_isbn"
+                        android:id="@+id/btn_barcode_isbn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.2"
-                        android:text="@string/load_isbn" />
+                        android:text="🔦" />
+
+
+                    <Button
+                        android:id="@+id/btn_search_isbn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.2"
+                        android:text="🔍" />
 
                 </LinearLayout>
 

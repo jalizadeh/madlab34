@@ -2,26 +2,26 @@ package com.example.sergio.madlab;
 
 public class User {
 
-    private String  username,
-            email,
-            city,
-            bio;
+    private String  name;
+    private String  email;
+    private String  city;
+    private String  bio;
 
     public User(){}
 
-    public User(String username, String email, String city, String bio) {
-        this.username = username;
+    public User(String name, String email, String city, String bio) {
+        this.name = name;
         this.email = email;
         this.city = city;
         this.bio = bio;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {

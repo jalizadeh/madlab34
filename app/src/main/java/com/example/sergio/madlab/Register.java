@@ -1,15 +1,9 @@
 package com.example.sergio.madlab;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,8 +16,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
-import com.google.firebase.auth.FirebaseUser;
-import com.example.sergio.madlab.User;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -31,14 +23,11 @@ import java.util.ArrayList;
 
 public class Register extends AppCompatActivity  implements View.OnClickListener {
 
-    private static final String TAG_CREDENTIAL = "Credentials";
-    private static final String TAG_ERROR = "Error";
-    private EditText txt_email, txt_pass, txt_confirm, txt_name, txt_city;
-    private Button reg_btn;
-    private ProgressDialog progressDialog;
+    private EditText etEmail, etPass, etConfirm, etName, etCity;
+    private Button btnSignup;
 
     private FirebaseAuth firebaseAuth;
-    DatabaseReference db;
+    private DatabaseReference db;
 
 
     @Override
@@ -46,24 +35,17 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.register_toolbar);
-        //setSupportActionBar(toolbar);
-
-        progressDialog=new ProgressDialog(this);
-
-
-
         //Views
-        reg_btn=(Button)findViewById(R.id.btn_signup);
-        txt_name = (EditText)findViewById(R.id.name);
-        txt_email=(EditText)findViewById(R.id.email);
-        txt_pass=(EditText)findViewById(R.id.password);
-        txt_confirm=(EditText)findViewById(R.id.password2);
-        txt_city=(EditText)findViewById(R.id.city);
+        btnSignup=(Button)findViewById(R.id.btnSignup);
+        etName = (EditText)findViewById(R.id.name);
+        etEmail=(EditText)findViewById(R.id.email);
+        etPass=(EditText)findViewById(R.id.password);
+        etConfirm=(EditText)findViewById(R.id.password2);
+        etCity=(EditText)findViewById(R.id.city);
 
 
         //
-        reg_btn.setOnClickListener(this);
+        btnSignup.setOnClickListener(this);
 
         //Firebase
         firebaseAuth=FirebaseAuth.getInstance();
@@ -75,48 +57,38 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add(txt_name.getText().toString());
-        arrayList.add(txt_email.getText().toString());
-        arrayList.add(txt_pass.getText().toString());
-        arrayList.add(txt_confirm.getText().toString());
-        arrayList.add(txt_city.getText().toString());
-        outState.putStringArrayList(TAG_CREDENTIAL, arrayList);
+        arrayList.add(etName.getText().toString());
+        arrayList.add(etEmail.getText().toString());
+        arrayList.add(etPass.getText().toString());
+        arrayList.add(etConfirm.getText().toString());
+        arrayList.add(etCity.getText().toString());
+        outState.putStringArrayList("user input", arrayList);
     }
 
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        ArrayList<String> arrayList = savedInstanceState.getStringArrayList(TAG_CREDENTIAL);
+        ArrayList<String> arrayList = savedInstanceState.getStringArrayList("user input");
 
         if (arrayList != null) {
-            txt_name.setText(arrayList.get(0));
-            txt_email.setText(arrayList.get(1));
-            txt_pass.setText(arrayList.get(2));
-            txt_confirm.setText(arrayList.get(3));
-            txt_city.setText(arrayList.get(4));
-        }
-    }
-
-    public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.btn_signup:
-                registerUser(txt_email.getText().toString(),
-                        txt_pass.getText().toString(),
-                        txt_confirm.getText().toString(),
-                        txt_name.getText().toString(),
-                        txt_city.getText().toString());
-                break;
+            etName.setText(arrayList.get(0));
+            etEmail.setText(arrayList.get(1));
+            etPass.setText(arrayList.get(2));
+            etConfirm.setText(arrayList.get(3));
+            etCity.setText(arrayList.get(4));
         }
     }
 
 
-    private void registerUser(final String email,
-                              final String password,
-                              final String confirm,
-                              final String name,
-                              final String city){
-        if (controlStrings(email, password, confirm, name, city)) {
+    private void registerUser(){
+        final String name = etName.getText().toString();
+        final String email = etEmail.getText().toString();
+        final String password = etPass.getText().toString();
+        final String confirm = etConfirm.getText().toString();
+        final String city = etCity.getText().toString();
+
+        if (validateInputs(name, email, password, confirm, city)) {
             firebaseAuth.createUserWithEmailAndPassword(email,password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -125,16 +97,15 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
                                 try {
                                     throw task.getException();
                                 } catch(FirebaseAuthInvalidCredentialsException e) {
-                                    txt_pass.setError(getString(R.string.error_invalid_password));
-                                    txt_pass.requestFocus();
+                                    etPass.setError(getString(R.string.error_invalid_password));
+                                    etPass.requestFocus();
                                 } catch (FirebaseAuthInvalidUserException e){
-                                    txt_email.setError(getString(R.string.error_invalid_email));
-                                    txt_email.requestFocus();;
+                                    etEmail.setError(getString(R.string.error_invalid_email));
+                                    etEmail.requestFocus();;
                                 } catch (FirebaseNetworkException e){
-                                    Toast.makeText(Register.this, "Network error", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Register.this, R.string.error_network, Toast.LENGTH_SHORT).show();
                                 } catch(Exception e) {
                                     Toast.makeText(Register.this, e.toString(), Toast.LENGTH_SHORT).show();
-                                    Log.e(TAG_ERROR, e.getMessage());
                                 }
                             } else{
                                 firebaseAuth.signInWithEmailAndPassword(email, password);
@@ -143,87 +114,60 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
                                 String userID = email.replace(",",",,").replace(".", ",");
                                 db.child("users").child(userID).setValue(user);
 
-                                AlertDialog.Builder alertDialog = new AlertDialog.Builder(Register.this);
-                                alertDialog.setTitle(R.string.success);
-                                alertDialog.setMessage(getString(R.string.register_success));
-                                alertDialog.setPositiveButton(R.string.go_to_dashboard, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        startActivity(new Intent(Register.this, MainActivity.class));
-                                        finish();
-                                    }
-                                }).create().show();
+                                Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(mainActivity);
+                                finish();
                             }
                         }
                     });
         }
 
-        /*
-        String email=txt_email.getText().toString().trim();
-        String password=txt_pass.getText().toString().trim();
-        if (TextUtils.isEmpty(email)){
-            //email is empty
-            Toast.makeText(this,"Enter your Email", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (TextUtils.isEmpty(password)){
-            //password is empty
-            Toast.makeText(this,"Enter Password",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        progressDialog.setMessage("Registering User...");
-        progressDialog.show();
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        progressDialog.dismiss();
-                        if (task.isSuccessful()){
-                            FirebaseUser user=firebaseAuth.getCurrentUser();
-                            Toast.makeText(Register.this, "Registered Successfully", Toast.LENGTH_SHORT).show();
-                            finish();
-                            Intent mainActivity=new Intent(Register.this, MainActivity.class);
-                            startActivity(mainActivity);
-                        }else {
-                            Toast.makeText(Register.this, "Could not register... please try again", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-        */
     }
 
 
 
-    private boolean controlStrings(String email, final String password, final String passRepeat, String name, String city){
-        if (email.isEmpty() || password.isEmpty() || passRepeat.isEmpty() || name.isEmpty() || city.isEmpty()){
-            if (city.isEmpty()){
-                txt_city.setError(getString(R.string.error_invalid_name));
-                txt_city.requestFocus();
-            }
-            if (name.isEmpty()){
-                txt_name.setError(getString(R.string.error_invalid_name));
-                txt_name.requestFocus();
-            }
-            if (passRepeat.isEmpty()){
-                txt_confirm.setError(getString(R.string.error_invalid_repeat_password));
-                txt_confirm.requestFocus();
-            }
-            if (password.isEmpty()){
-                txt_pass.setError(getString(R.string.error_invalid_password));
-                txt_pass.requestFocus();
-            }
-            if (email.isEmpty()){
-                txt_email.setError(getString(R.string.error_invalid_email));
-                txt_email.requestFocus();
-            }
+    //check if all input values are valid
+    private boolean validateInputs(String name, String email, String password, String passRepeat, String city){
+        if (name.isEmpty()){
+            etName.setError(getString(R.string.error_invalid_name));
+            etName.requestFocus();
             return false;
-        } else if (!password.equals(passRepeat)){
-            txt_confirm.setError(getString(R.string.error_incorrect_password));
-            txt_confirm.requestFocus();
+        }
+        if (email.isEmpty()){
+            etEmail.setError(getString(R.string.error_invalid_email));
+            etEmail.requestFocus();
+            return false;
+        }
+        if (password.isEmpty()){
+            etPass.setError(getString(R.string.error_invalid_password));
+            etPass.requestFocus();
+            return false;
+        }
+        if (passRepeat.isEmpty()){
+            etConfirm.setError(getString(R.string.error_invalid_repeat_password));
+            etConfirm.requestFocus();
+            return false;
+        }
+        if (city.isEmpty()){
+            etCity.setError(getString(R.string.error_invalid_name));
+            etCity.requestFocus();
+            return false;
+        }
+        if (!password.equals(passRepeat)){
+            etConfirm.setError(getString(R.string.error_incorrect_password));
+            etConfirm.requestFocus();
             return false;
         }
 
         return true;
+    }
+
+
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.btnSignup:
+                registerUser();
+                break;
+        }
     }
 }

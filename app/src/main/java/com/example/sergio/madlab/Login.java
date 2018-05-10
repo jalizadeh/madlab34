@@ -1,38 +1,15 @@
 package com.example.sergio.madlab;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
-
-import android.os.Build;
-import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -46,45 +23,36 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 public class Login extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String TAG = "content_login";
-    public Button mBtLogin;
-    public Button mBtSignup;
-    private EditText txt_email;
-    private EditText txt_password;
+    public Button btnLogin, btnRegister;
+    private EditText etEmail, etPassword;
+    private String email, password;
     private FirebaseAuth firebaseAuth;
-    private ProgressDialog progressDialog;
-
-    private static final String TAG_CREDENTIAL = "Credentials";
-    private static final String TAG_ERROR = "Error";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-        //setSupportActionBar(toolbar);
+
         firebaseAuth = FirebaseAuth.getInstance();
 
+        //if user already logged in, jump to MainActivity
         if (firebaseAuth.getCurrentUser() != null) {
             finish();
             Intent mainActivity = new Intent(Login.this, MainActivity.class);
             startActivity(mainActivity);
         }
 
-        progressDialog = new ProgressDialog(this);
-        txt_email = (EditText) findViewById(R.id.email);
-        txt_password = (EditText) findViewById(R.id.password);
-        mBtLogin = (Button) findViewById(R.id.email_sign_in_button);
-        mBtSignup = (Button) findViewById(R.id.email_sign_up_button);
-        mBtLogin.setOnClickListener((View.OnClickListener) this);
-        mBtSignup.setOnClickListener((View.OnClickListener) this);
+        etEmail = (EditText) findViewById(R.id.email);
+        etPassword = (EditText) findViewById(R.id.password);
+        btnLogin = (Button) findViewById(R.id.btnSignin);
+        btnRegister = (Button) findViewById(R.id.btnSignup);
+
+        btnLogin.setOnClickListener((View.OnClickListener) this);
+        btnRegister.setOnClickListener((View.OnClickListener) this);
 
 
     }
@@ -94,9 +62,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add(txt_email.getText().toString());
-        arrayList.add(txt_password.getText().toString());
-        outState.putStringArrayList(TAG_CREDENTIAL, arrayList);
+        arrayList.add(etEmail.getText().toString());
+        arrayList.add(etPassword.getText().toString());
+        outState.putStringArrayList("email+pass", arrayList);
     }
 
 
@@ -104,80 +72,78 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     public void onStart() {
         super.onStart();
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if(currentUser != null){
-            startActivity(new Intent(this, MainActivity.class));
+
+        //if user already logged in, jump to MainActivity
+        if (firebaseAuth.getCurrentUser() != null) {
             finish();
+            Intent mainActivity = new Intent(Login.this, MainActivity.class);
+            startActivity(mainActivity);
         }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        ArrayList<String> arrayList = savedInstanceState.getStringArrayList(TAG_CREDENTIAL);
+        ArrayList<String> arrayList = savedInstanceState.getStringArrayList("email+pass");
         if (arrayList != null) {
-            txt_email.setText(arrayList.get(0));
-            txt_password.setText(arrayList.get(1));
+            etEmail.setText(arrayList.get(0));
+            etPassword.setText(arrayList.get(1));
         }
     }
 
     @Override
     public void onClick(View v) {
-        if (v == mBtLogin) {
-            authenticateUser();
-        }
-        if (v == mBtSignup) {
-            Intent signUp = new Intent(Login.this, Register.class);
-            startActivity(signUp);
-        }
-    }
+        if (v == btnLogin) {
+            email = etEmail.getText().toString().trim();
+            password = etPassword.getText().toString().trim();
+            if (email.isEmpty()) {
+                Toast.makeText(this, "Please Enter Your Email", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (password.isEmpty()) {
+                Toast.makeText(this, "Please Enter Your Email", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-    private void authenticateUser() {
-        String email = txt_email.getText().toString().trim();
-        String password = txt_password.getText().toString().trim();
-        if (TextUtils.isEmpty(email)) {
-            Toast.makeText(this, "Please Enter Your Email", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Please Enter Your Email", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        progressDialog.setMessage("Logging On");
-        progressDialog.show();
-        firebaseAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(Login.this, "Log in Successful... ", Toast.LENGTH_SHORT).show();
-                            FirebaseUser user = firebaseAuth.getCurrentUser();
-                            finish();
-                            Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(mainActivity);
-                        } else
-                            try {
-                                throw task.getException();
-                            } catch(FirebaseAuthInvalidCredentialsException e) {
-                                txt_password.setError(getString(R.string.error_invalid_password));
-                                txt_password.requestFocus();
-                            } catch (FirebaseAuthInvalidUserException e){
-                                txt_email.setError(getString(R.string.error_invalid_email));
-                                txt_email.requestFocus();;
-                            } catch (FirebaseNetworkException e){
-                                Toast.makeText(Login.this, "Network error", Toast.LENGTH_SHORT).show();
-                            } catch(Exception e) {
-                                Toast.makeText(Login.this, "Some problem", Toast.LENGTH_SHORT).show();
-                                Log.e(TAG_ERROR, e.getMessage());
-                            }
+            Toast.makeText(Login.this, "Wait please...\nlogging in progress", Toast.LENGTH_SHORT).show();
+            firebaseAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                //Toast.makeText(Login.this, "Log in Successful... ", Toast.LENGTH_SHORT).show();
+                                FirebaseUser user = firebaseAuth.getCurrentUser();
+                                finish();
+                                Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(mainActivity);
+                            } else
+                                try {
+                                    throw task.getException();
+                                } catch (FirebaseAuthInvalidUserException e){
+                                    etEmail.setError(getString(R.string.error_invalid_email));
+                                    etEmail.requestFocus();
+                                } catch(FirebaseAuthInvalidCredentialsException e) {
+                                    etPassword.setError(getString(R.string.error_invalid_password));
+                                    etPassword.requestFocus();
+                                } catch (FirebaseNetworkException e){
+                                    Toast.makeText(Login.this, R.string.error_network, Toast.LENGTH_SHORT).show();
+                                } catch(Exception e) {
+                                    Toast.makeText(Login.this, R.string.error_login, Toast.LENGTH_SHORT).show();
+                                }
 
-                    }
-                });
+                        }
+                    });
+        }
+        if (v == btnRegister) {
+            Intent register = new Intent(Login.this, Register.class);
+            startActivity(register);
+        }
     }
 
 
 
     //@Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(this,"Login error. Maybe there is no connection",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,R.string.error_network,Toast.LENGTH_SHORT).show();
     }
 }

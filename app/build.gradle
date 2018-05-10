@@ -33,6 +33,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.google.apis:google-api-services-books:v1-rev95-1.23.0'
 
 }
 
