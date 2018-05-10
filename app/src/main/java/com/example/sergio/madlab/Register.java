@@ -110,7 +110,7 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
                             } else{
                                 firebaseAuth.signInWithEmailAndPassword(email, password);
 
-                                User user = new User(name, email, city, "");
+                                User user = new User("", name, email, city, "");
                                 String userID = email.replace(",",",,").replace(".", ",");
                                 db.child("users").child(userID).setValue(user);
 

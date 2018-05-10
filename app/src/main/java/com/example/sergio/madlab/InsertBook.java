@@ -1,7 +1,9 @@
 package com.example.sergio.madlab;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,6 +40,7 @@ import java.util.Map;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -44,6 +48,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -56,6 +61,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.example.sergio.madlab.Book;
 
 public class InsertBook extends AppCompatActivity implements View.OnClickListener{
 
@@ -75,7 +81,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     private final int OPEN_CAMERA = 2;
     private final int OPEN_BARCODE_READER = 3;
     private final String GOOGLE_ISBN_LINK = "https://www.googleapis.com/books/v1/volumes?q=isbn:";
-
+//https://www.googleapis.com/books/v1/volumes?q=isbn:9780136123569
 
 
 
@@ -90,6 +96,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     private String editYear= "";
     private String genre="";
     private String tags="";
+    private String condition="";
 
 
     private Bitmap bitmap;
@@ -102,7 +109,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     private EditText etEditYear;
     private Spinner spGenre;
     private EditText etTags;
-    private EditText etBookCondition;
+    private EditText etCondition;
 
 
     private Button loadImage;
@@ -112,12 +119,16 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
 
 
     //Firebase
+    private String userID;
     private FirebaseUser authUser;
     private StorageReference storageRef;
     private DatabaseReference database;
-    private DatabaseReference ref;
+    private DatabaseReference booksDB;
 
 
+    Uri uri;
+    File filename;
+    private String path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +147,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         etEditYear = (EditText) findViewById(R.id.editText_book_editYear);
         spGenre = (Spinner) findViewById(R.id.spinner_bookGenre);
         etTags = (EditText) findViewById(R.id.editText_book_tags);
-        etBookCondition = (EditText) findViewById(R.id.editText_book_condition);
+        etCondition = (EditText) findViewById(R.id.editText_book_condition);
 
 
         //get button views
@@ -151,6 +162,16 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         getBarcodeData.setOnClickListener((View.OnClickListener) this);
 
 
+        //
+        database = FirebaseDatabase.getInstance().getReference();
+        booksDB = database.child("books");
+
+        storageRef = FirebaseStorage.getInstance().getReference();
+
+        // will be used for storing in book structure
+        authUser = FirebaseAuth.getInstance().getCurrentUser();
+        userID = authUser.getUid();
+
 
     }
 
@@ -163,6 +184,8 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
 
 
 
+    //1. save book data
+    //2. save image
     //when save button is pressed
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -170,34 +193,75 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         if (item.getItemId() == R.id.action_done) {
             //prepare data to be stored
             // may change in future: input validity is not checked
-            isbn = etISBN.getText().toString();
-            title = etTitle.getText().toString();
-            author = etAuthor.getText().toString();
-            publisher = etPublisher.getText().toString();
-            editYear = etEditYear.getText().toString();
-            genre = spGenre.getSelectedItem().toString();
-            tags = etTags.getText().toString();
-
-
-            //create a new child with isbn as its unique ID
-            database = FirebaseDatabase.getInstance().getReference("Books").child(isbn);
-            database.child("title").setValue(title);
-            database.child("author").setValue(author);
-            database.child("publisher").setValue(publisher);
-            database.child("edityear").setValue(editYear);
-            database.child("genre").setValue(genre);
-            database.child("tags").setValue(tags);
-
-            //show all input
-            Toast.makeText(this, isbn+"\n"+title+"\n"+author+"\n"+publisher+"\n"+editYear+"\n"+genre+"\n"+tags,Toast.LENGTH_SHORT).show();
-
-            //Toast.makeText(this, "Book saved successfully!",Toast.LENGTH_SHORT).show();
-
-            finish();
+            getEditTextsValues();
+            if (validateValues()){
+                uploadBookData();
+                uploadBookImage();
+                Toast.makeText(this, "Book data uploaded successfully",Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Please check the fields.",Toast.LENGTH_SHORT).show();
+            }
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    public void getEditTextsValues(){
+        isbn = etISBN.getText().toString();
+        title = etTitle.getText().toString();
+        author = etAuthor.getText().toString();
+        publisher = etPublisher.getText().toString();
+        editYear = etEditYear.getText().toString();
+        genre = spGenre.getSelectedItem().toString();
+        tags = etTags.getText().toString();
+        condition = etCondition.getText().toString();
+    }
+
+    public boolean validateValues(){
+        if (isbn.isEmpty()){
+            etISBN.setError(getString(R.string.error_invalid_isbn));
+            etISBN.requestFocus();
+            return false;
+        }
+        if (title.isEmpty()){
+            etTitle.setError(getString(R.string.error_invalid_title));
+            etTitle.requestFocus();
+            return false;
+        }
+        if (author.isEmpty()){
+            etAuthor.setError(getString(R.string.error_invalid_author));
+            etAuthor.requestFocus();
+            return false;
+        }
+        if (publisher.isEmpty()){
+            etPublisher.setError(getString(R.string.error_invalid_publisher));
+            etPublisher.requestFocus();
+            return false;
+        }
+        if (editYear.isEmpty()){
+            etEditYear.setError(getString(R.string.error_invalid_edityear));
+            etEditYear.requestFocus();
+            return false;
+        }
+        if (genre.equals("SELECT")){
+            TextView errorText = (TextView) spGenre.getSelectedView();
+            errorText.setError("");
+            errorText.setTextColor(Color.RED);//just to highlight that this is an error
+            errorText.setText(R.string.error_invalid_genre);//changes the selected item text to this
+            errorText.requestFocus();
+            return false;
+        }
+        if (condition.isEmpty()){
+            etCondition.setError(getString(R.string.error_invalid_condition));
+            etCondition.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+
 
 
     @Override
@@ -239,7 +303,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             task.execute(apiUrlString);
 
         } else if (requestCode == OPEN_GALLERY && resultCode == RESULT_OK && data != null){
-            Uri uri = data.getData();
+            uri = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
                 bookImage.setImageBitmap(bitmap);
@@ -248,6 +312,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             }
 
         } else if (requestCode == OPEN_CAMERA && resultCode == RESULT_OK && data != null) {
+            uri = data.getData();
             bitmap = (Bitmap) data.getExtras().get("data");
             bookImage.setImageBitmap(bitmap);
 
@@ -296,6 +361,9 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
 
                     if (bookJson.getJSONArray("items").getJSONObject(0).getJSONObject("volumeInfo").has("title")) {
                         title = bookJson.getJSONArray("items").getJSONObject(0).getJSONObject("volumeInfo").getString("title");
+                        if (bookJson.getJSONArray("items").getJSONObject(0).getJSONObject("volumeInfo").has("subtitle")) {
+                            title += ", " + bookJson.getJSONArray("items").getJSONObject(0).getJSONObject("volumeInfo").getString("subtitle");
+                        }
                     } else {
                         title ="";
                     }
@@ -341,15 +409,17 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
 
 
 
-/*
+
+    //all books are saved in 1 place so they will be searched by isbn
     private void uploadBookImage() {
-        StorageReference fileRef = storageRef.child("images").child(userEmail).child("profile_image");
-        if (fileRef != null) {
-            fileRef.putFile(getUri(path, filename))
+        if (uri != null) {
+            isbn += ".jpg";
+            StorageReference fileRef = storageRef.child("images").child("books").child(isbn);
+            fileRef.putFile(uri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Toast.makeText(EditProfile.this, "Uploaded successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(InsertBook.this, "Uploaded successfully", Toast.LENGTH_SHORT).show();
                             //saveDataToFirebase();
                             finish();
 
@@ -357,29 +427,28 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                     }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    Toast.makeText(EditProfile.this, "Upload failed.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(InsertBook.this, "Upload failed.", Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
-            Toast.makeText(EditProfile.this, R.string.profile_not_exists, Toast.LENGTH_LONG).show();
+            Toast.makeText(InsertBook.this, "No image was picked", Toast.LENGTH_LONG).show();
         }
     }
 
     private void uploadBookData() {
-        getEditTextsValues();
-        if(validateInputs(name, email,city)){
-            user.setName(name);
-            user.setEmail(email);
-            user.setBio(bio);
-            user.setCity(city);
-        }
+        //Toast.makeText(this, isbn+"\n"+title+"\n"+author+"\n"+publisher+"\n"+editYear+"\n"+genre+"\n"+tags,Toast.LENGTH_SHORT).show();
 
-        ref.child(userEmail).setValue(user, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                finish();
-            }
-        });
+        book = new Book();
+        book.setIsbn(isbn);
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setPublisher(publisher);
+        book.setEdityear(editYear);
+        book.setGenre(genre);
+        book.setTags(tags);
+        book.setCondition(condition);
+        book.setUser(userID);
+
+        booksDB.child(isbn).setValue(book);
     }
-    */
 }

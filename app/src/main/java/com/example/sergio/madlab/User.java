@@ -2,6 +2,7 @@ package com.example.sergio.madlab;
 
 public class User {
 
+    private String userID;
     private String  name;
     private String  email;
     private String  city;
@@ -9,11 +10,20 @@ public class User {
 
     public User(){}
 
-    public User(String name, String email, String city, String bio) {
+    public User(String userID, String name, String email, String city, String bio) {
+        this.userID = userID;
         this.name = name;
         this.email = email;
         this.city = city;
         this.bio = bio;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public String getName() {

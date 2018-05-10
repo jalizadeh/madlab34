@@ -90,7 +90,13 @@
 
 
     <!--errors-->
-
+    <string name="error_invalid_isbn">Fill the ISBN</string>
+    <string name="error_invalid_title">Fill the title</string>
+    <string name="error_invalid_author">Fill the author(s)</string>
+    <string name="error_invalid_publisher">Fill the publisher</string>
+    <string name="error_invalid_edityear">Fill the year</string>
+    <string name="error_invalid_genre">Select a genre</string>
+    <string name="error_invalid_condition">Fill the book condition</string>
 
 
 

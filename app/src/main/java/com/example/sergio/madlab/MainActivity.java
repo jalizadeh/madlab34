@@ -63,6 +63,16 @@ public class MainActivity extends AppCompatActivity
     private TextView tvNHName;
     private TextView tvNHMail;
 
+    private String isbn="";
+    private String title="";
+    private String author="";
+    private String publisher="";
+    private String editYear= "";
+    private String genre="";
+    private String tags="";
+    private String condition="";
+
+
     private RecyclerView mBookList;
 
     private String userEmail;
@@ -73,9 +83,9 @@ public class MainActivity extends AppCompatActivity
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private DatabaseReference db, ref;
-    private static final String filename = "profileImage.jpeg";
-    private static final String TAG = "DatabaseError";
+    private DatabaseReference database, userDB, booksDB;
+
+    FirebaseRecyclerAdapter<Book, BookViewHolder> firebaseRecyclerAdapter;
 
 
     @Override
@@ -145,8 +155,8 @@ public class MainActivity extends AppCompatActivity
 
 
         firebaseAuth = FirebaseAuth.getInstance();
-        db = FirebaseDatabase.getInstance().getReference();
-        ref = db.child("users");
+        database = FirebaseDatabase.getInstance().getReference();
+        userDB = database.child("users");
 
         //if the user token is not in the local storage
         if(firebaseAuth.getCurrentUser() == null) {
@@ -168,7 +178,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private void getUserProfile(){
-        ref.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        userDB.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
@@ -181,7 +191,6 @@ public class MainActivity extends AppCompatActivity
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e(TAG, "onCancelled", databaseError.toException());
             }
         });
     }
@@ -251,8 +260,9 @@ public class MainActivity extends AppCompatActivity
 
     public void showAllBooks(){
         //shows all books
-        db = FirebaseDatabase.getInstance().getReference().child("Books");
-        db.keepSynced(true);
+        database = FirebaseDatabase.getInstance().getReference();
+        booksDB = database.child("books");
+        booksDB.keepSynced(true);
 
         mBookList = (RecyclerView) findViewById(R.id.myrecycleview);
         mBookList.hasFixedSize();
@@ -271,12 +281,6 @@ public class MainActivity extends AppCompatActivity
         public BookViewHolder(final View itemView){
             super(itemView);
             mView = itemView;
-
-            mView.setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View v) {
-                    Toast.makeText(v.getContext(),"db fetch failed",Toast.LENGTH_SHORT).show();
-                }
-            });
 
         }
 
@@ -313,15 +317,34 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseRecyclerAdapter<Book, ShowAllBooks.BookViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, ShowAllBooks.BookViewHolder>
-                (Book.class, R.layout.book_cardview, ShowAllBooks.BookViewHolder.class, db) {
+
+        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>
+                (Book.class, R.layout.book_cardview, BookViewHolder.class, booksDB) {
             @Override
-            protected void populateViewHolder(ShowAllBooks.BookViewHolder viewHolder, Book book, int position) {
-                viewHolder.setTitle(book.getTitle());
+            protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
+                title = book.getTitle();
+                isbn = book.getIsbn();
+                viewHolder.setTitle(title);
+
+                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        firebaseRecyclerAdapter.getRef(position).removeValue();
+                        Toast.makeText(getApplicationContext(),title,Toast.LENGTH_LONG).show();
+                    }
+                });
+                viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        Toast.makeText(getApplicationContext(),isbn,Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                });
                 //viewHolder.setAtuthor(book.getAuthor());
                 //viewHolder.setGenre(book.getGenre());
             }
         };
+
 
         mBookList.setAdapter(firebaseRecyclerAdapter);
 

@@ -1,19 +1,21 @@
 package com.example.sergio.madlab;
 
 public class Book {
-    String isbn;
-    String title;
-    String author;
-    String publisher;
-    String edityear;
-    String genre;
-    String tags;
 
-    public Book() {
+    private String isbn;
+    private String title;
+    private String author;
+    private String publisher;
+    private String edityear;
+    private String genre;
+    private String tags;
+    private String condition;
+    private String user;
 
-    }
 
-    public Book(String isbn, String title, String author, String publisher, String edityear, String genre, String tags) {
+    public Book(){}
+
+    public Book(String isbn, String title, String author, String publisher, String edityear, String genre, String tags, String condition, String user) {
         this.isbn = isbn;
         this.title = title;
         this.author = author;
@@ -21,10 +23,9 @@ public class Book {
         this.edityear = edityear;
         this.genre = genre;
         this.tags = tags;
+        this.condition = condition;
+        this.user = user;
     }
-
-
-
 
     public String getIsbn() {
         return isbn;
@@ -58,11 +59,11 @@ public class Book {
         this.publisher = publisher;
     }
 
-    public String getEditYear() {
+    public String getEdityear() {
         return edityear;
     }
 
-    public void setEditYear(String editYear) {
+    public void setEdityear(String edityear) {
         this.edityear = edityear;
     }
 
@@ -80,5 +81,21 @@ public class Book {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 }

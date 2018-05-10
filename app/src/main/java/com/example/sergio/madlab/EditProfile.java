@@ -1,6 +1,7 @@
 package com.example.sergio.madlab;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,12 +9,16 @@ import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -94,6 +99,7 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
 
     //private ProgressDialog progressDialog;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +161,8 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         return true;
     }
 
+
+    @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onClick(View v) {
         if (v == btnLoadImage){
@@ -162,10 +170,35 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             startActivityForResult(galleryIntent, OPEN_GALLERY);
         }
         if (v == btnOpenCamera) {
-            Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(photoIntent, OPEN_CAMERA);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, OPEN_CAMERA);
+                }
+            }
         }
     }
+
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case OPEN_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(photoIntent, OPEN_CAMERA);
+
+                } else {
+                    Toast.makeText(EditProfile.this, "No camera permissions granted!", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+
+
 
 
     //get the inserted data whenever needed
@@ -260,18 +293,13 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             Uri uri = intent.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-
-                //bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
                 path = saveToInternalStorage(bitmap, filename);
 
                 editor.putString("imagePath", path);
                 editor.commit();
                 profileImage.setImageBitmap(bitmap);
-                Log.e("bitmap path", path);
-
             } catch (IOException e) {
                 Toast.makeText(EditProfile.this, "loading failed.", Toast.LENGTH_SHORT).show();
-                Log.e("bitmap", uri.toString());
             }
         }
 
@@ -386,5 +414,8 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         File image = new File(path, filename);
         return Uri.fromFile(image);
     }
+
+
+
 
 }
