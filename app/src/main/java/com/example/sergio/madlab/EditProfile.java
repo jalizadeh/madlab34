@@ -52,11 +52,10 @@ import java.io.IOException;
 
 public class EditProfile extends AppCompatActivity implements View.OnClickListener{
 
-    private final int GET_FROM_GALLERY = 5;
-    private final int PHOTO_REQUEST_CODE = 6;
+    private final int OPEN_GALLERY = 5;
+    private final int OPEN_CAMERA = 6;
 
     private final String filename = "profileImage.jpg";
-    //private final String tempFilename = "profiletempImage.jpg";
     private static final String filepath = "images";
 
     //edit texts
@@ -156,15 +155,15 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         return true;
     }
 
-
+    @Override
     public void onClick(View v) {
         if (v == btnLoadImage){
             Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(galleryIntent, GET_FROM_GALLERY);
+            startActivityForResult(galleryIntent, OPEN_GALLERY);
         }
         if (v == btnOpenCamera) {
             Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(photoIntent, PHOTO_REQUEST_CODE);
+            startActivityForResult(photoIntent, OPEN_CAMERA);
         }
     }
 
@@ -257,7 +256,7 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
-        if (requestCode == GET_FROM_GALLERY && resultCode == RESULT_OK && intent != null) {
+        if (requestCode == OPEN_GALLERY && resultCode == RESULT_OK && intent != null) {
             Uri uri = intent.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
@@ -276,7 +275,7 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             }
         }
 
-        if (requestCode == PHOTO_REQUEST_CODE && resultCode == RESULT_OK && intent != null) {
+        if (requestCode == OPEN_CAMERA && resultCode == RESULT_OK && intent != null) {
             bitmap = (Bitmap) intent.getExtras().get("data");
             path = saveToInternalStorage(bitmap, filename);
             editor.putString("imagePath", path);

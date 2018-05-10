@@ -27,6 +27,7 @@
     <string name="book_editYear">Edit Year</string>
     <string name="book_genre">Genre</string>
     <string-array name="book_genre_list">
+        <item>SELECT</item>
         <item>Science</item>
         <item>Technology</item>
         <item>Fiction</item>

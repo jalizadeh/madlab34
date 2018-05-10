@@ -44,38 +44,30 @@
                     android:orientation="vertical">
 
                     <ImageView
-                        android:id="@+id/imageView"
+                        android:id="@+id/bookImage"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        app:srcCompat="@android:color/darker_gray" />
+                        android:layout_height="150dp"
+                        app:srcCompat="@android:color/background_light" />
 
 
 
                     <Button
-                        android:id="@+id/load_image_button"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/btnLoadImage"
+                        android:layout_width="55dp"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:layout_alignParentTop="true"
-                        android:onClick="openGallery"
-                        android:text="@string/load_image_button" />
+                        android:backgroundTint="@color/colorAccent"
+                        android:background="@drawable/ic_menu_gallery"/>
 
                     <Button
-                        android:id="@+id/open_camera_button"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/btnOpenCamera"
+                        android:layout_width="55dp"
                         android:layout_height="wrap_content"
-                        android:layout_alignEnd="@+id/load_image_button"
-                        android:layout_alignRight="@+id/load_image_button"
-                        android:layout_alignParentTop="true"
+                        android:layout_alignLeft="@+id/btnLoadImage"
                         android:layout_marginTop="50dp"
-                        android:text="@string/open_camera_button" />
-
-                    <Button
-                        android:id="@+id/startRetrieveTask"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="retrieve"
-                        android:clickable="false"/>
+                        android:backgroundTint="@color/colorAccent"
+                        android:background="@drawable/ic_menu_camera" />
 
                 </RelativeLayout>
             </LinearLayout>
@@ -113,19 +105,19 @@
                     </android.support.design.widget.TextInputLayout>
 
                     <Button
-                        android:id="@+id/btn_barcode_isbn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:id="@+id/btnBarcodeISBN"
+                        android:layout_width="70dp"
+                        android:layout_height="50dp"
                         android:layout_weight="0.2"
-                        android:text="🔦" />
+                        android:background="@mipmap/barcode" />
 
 
                     <Button
-                        android:id="@+id/btn_search_isbn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:id="@+id/btnSearchISBN"
+                        android:layout_width="70dp"
+                        android:layout_height="50dp"
                         android:layout_weight="0.2"
-                        android:text="🔍" />
+                        android:background="@mipmap/search" />
 
                 </LinearLayout>
 
@@ -199,39 +191,32 @@
 
                 </android.support.design.widget.TextInputLayout>
 
-                <android.support.design.widget.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <EditText
-                        android:id="@+id/editText_book_condition"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/margin"
-                        android:ems="10"
-                        android:hint="Condition"
-                        android:inputType="text" />
 
 
-                </android.support.design.widget.TextInputLayout>
+               <LinearLayout
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"
+                   android:orientation="horizontal"
+                   android:layout_margin="@dimen/margin">
 
+                   <TextView
+                       android:id="@+id/book_genre"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:layout_marginTop="10dp"
+                       android:text="@string/book_genre" />
 
-                <TextView
-                    android:id="@+id/book_genre"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/left_margin"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/book_genre" />
+                   <Spinner
+                       android:id="@+id/spinner_bookGenre"
+                       android:layout_width="fill_parent"
+                       android:layout_height="wrap_content"
+                       android:entries="@array/book_genre_list"
+                       android:spinnerMode="dialog"
+                       android:layout_marginLeft="@dimen/left_margin"
+                       android:layout_marginTop="10dp"
+                       android:backgroundTint="@color/cardview_shadow_end_color"/>
 
-                <Spinner
-                    android:id="@+id/spinner_bookGenre"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/book_genre_list"
-                    android:spinnerMode="dialog"
-                    android:layout_marginLeft="@dimen/left_margin"
-                    android:layout_marginTop="10dp"/>
+               </LinearLayout>
 
 
                 <android.support.design.widget.TextInputLayout
@@ -247,6 +232,22 @@
                         android:ems="10"
                         android:hint="Tags"
                         android:inputType="text" />
+
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <EditText
+                        android:id="@+id/editText_book_condition"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/margin"
+                        android:ems="10"
+                        android:hint="Book Condition"
+                        android:inputType="text" />
+
 
                 </android.support.design.widget.TextInputLayout>
 

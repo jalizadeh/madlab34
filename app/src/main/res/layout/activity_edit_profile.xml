@@ -49,17 +49,17 @@
                     android:layout_width="55dp"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
-                    android:backgroundTint="@color/colorAccent"
                     android:layout_alignParentTop="true"
+                    android:backgroundTint="@color/colorAccent"
                     android:background="@drawable/ic_menu_gallery" />
 
                 <Button
                     android:id="@+id/btn_openCamera"
                     android:layout_width="55dp"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/colorAccent"
                     android:layout_alignLeft="@+id/btn_loadImage"
                     android:layout_marginTop="50dp"
+                    android:backgroundTint="@color/colorAccent"
                     android:background="@drawable/ic_menu_camera"/>
 
             </RelativeLayout>
