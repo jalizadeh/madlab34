@@ -2,7 +2,10 @@ package com.example.sergio.madlab;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +53,8 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.example.sergio.madlab.User;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
@@ -73,6 +79,8 @@ public class MainActivity extends AppCompatActivity
     private String condition="";
 
 
+    //
+    ImageView bookThumbnail;
     private RecyclerView mBookList;
 
     private String userEmail;
@@ -81,9 +89,12 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences profile;
     private SharedPreferences.Editor editor;
 
+
+    //
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference database, userDB, booksDB;
+    //private StorageReference storageRef;
 
     FirebaseRecyclerAdapter<Book, BookViewHolder> firebaseRecyclerAdapter;
 
@@ -291,6 +302,36 @@ public class MainActivity extends AppCompatActivity
             nameTxt.setText(title);
         }
 
+        public void setImage(String keyISBN){
+            final ImageView bookThumb = (ImageView)mView.findViewById(R.id.cv_bookImage);
+
+            String bookNameWithISBN = keyISBN + ".jpg";
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("images/books/" + bookNameWithISBN);
+            try {
+                final File localFile = File.createTempFile("Image", "jpg");
+
+                storageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                        bookThumb.setImageBitmap(bmp);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Toast.makeText(ViewBook.this, "No book image found", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                       // Toast.makeText(ViewBook.this, "Grabbing book photo\nplease wait...", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         /*
         public void setAtuthor(String author){
             TextView propTxt= (TextView) mView.findViewById(R.id.propellantTxt);
@@ -313,7 +354,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -325,12 +365,17 @@ public class MainActivity extends AppCompatActivity
                 title = book.getTitle();
                 isbn = book.getIsbn();
                 viewHolder.setTitle(title);
+                viewHolder.setImage(isbn);
 
                 viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        firebaseRecyclerAdapter.getRef(position).removeValue();
-                        Toast.makeText(getApplicationContext(),title,Toast.LENGTH_LONG).show();
+                        //firebaseRecyclerAdapter.getRef(position).removeValue();
+                        String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
+                        //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(getBaseContext(), ViewBook.class);
+                        intent.putExtra("keyISBN", keyISBN);
+                        startActivity(intent);
                     }
                 });
                 viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {

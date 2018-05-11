@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:11.8.0'
     implementation 'com.google.firebase:firebase-auth:11.8.0'
     implementation 'com.firebaseui:firebase-ui-database:0.4.0'
+    implementation 'com.firebaseui:firebase-ui-storage:3.0.0'
     implementation 'com.google.firebase:firebase-storage:11.8.0'
     implementation 'com.google.android.gms:play-services-vision:11.8.0'
     implementation 'com.android.support:design:27.1.1'
