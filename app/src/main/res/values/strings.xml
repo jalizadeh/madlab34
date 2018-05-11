@@ -34,6 +34,14 @@
         <item>Mathematics</item>
         <item>Computer</item>
     </string-array>
+
+    <string-array name="search_factor">
+        <item>Search by</item>
+        <item>Title</item>
+        <item>Author</item>
+        <item>Publisher</item>
+        <item>Date</item>
+    </string-array>
     <string name="book_tags">Tags</string>
     <string name="book_condition">Condition</string>
 
@@ -63,6 +71,7 @@
     <string name="title_activity_login">Sign in</string>
     <string name="title_activity_register">Sign in</string>
     <string name="title_activity_view_book">Book Details</string>
+    <string name="title_activity_searchBook">Search Book</string>
 
 
     <!-- Strings related to login -->

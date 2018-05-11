@@ -51,6 +51,9 @@
         <activity
             android:name=".ViewBook"
             android:label="@string/title_activity_register"></activity>
+        <activity
+            android:name=".SearchBook"
+            android:label="@string/title_activity_searchBook"></activity>
     </application>
 
 </manifest>

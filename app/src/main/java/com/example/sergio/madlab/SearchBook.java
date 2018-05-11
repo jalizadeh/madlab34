@@ -7,37 +7,23 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,14 +37,11 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.example.sergio.madlab.User;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class SearchBook extends AppCompatActivity {
 
     //retrieved data from database
     private String dbName="";
@@ -102,83 +85,18 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_search_book);
 
         //Set toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_searchBook);
         setSupportActionBar(toolbar);
 
-        //set floating button
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Snackbar.make(view, "search...", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                Intent intent = new Intent(MainActivity.this, SearchBook.class);
-                startActivity(intent);
-            }
-        });
-
-
-        //set drawer
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        //set navigation
-        //View header = ((NavigationView)findViewById(R.id.nav_view)).getHeaderView(0);
-        //tvNHName = header.findViewById(R.id.nav_header_title);
-        //tvNHMail = header.findViewById(R.id.nav_header_mail);
-        //tvNHName.setText("");
-        //tvNHMail.setText("");
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        //navigationView.setNavigationItemSelectedListener(this);
-
-//        tvNHName.setText("");
-//        tvNHMail.setText("");
-        //once the activity is Created or Restarted, it will show all books
-        showAllBooks();
-
-        // SharedPreferences
-        profile = this.getSharedPreferences("profile", MODE_PRIVATE);
-
-        /*
-        // load user`s data from local database
-        // may change in future
-        Intent intent = getIntent();
-        if (intent.getExtras() != null) {
-            tvNHName.setText(intent.getStringExtra("name"));
-            tvNHMail.setText(intent.getStringExtra("mail"));
-            //textView_bio.setText(intent.getStringExtra("bio"));
-        } else {
-            //tvNHName.setText(profile.getString("name", tvNHName.getText().toString()));
-            //tvNHMail.setText(profile.getString("mail", tvNHMail.getText().toString()));
-            //textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
-            tvNHName.setText(profile.getString("name", ""));
-            tvNHMail.setText(profile.getString("mail", ""));
-            tvNHMail.setText(profile.getString("bio", ""));
-            //textView_bio.setText(profile.getString("bio", textView_bio.getText().toString()));
-        }
-        */
 
 
 
         firebaseAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
         userDB = database.child("users");
-
-        //if the user token is not in the local storage
-        if(firebaseAuth.getCurrentUser() == null) {
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-        }
-
-
-        //tvNHName = (TextView) findViewById(R.id.nav_header_title) ;
-        //tvNHMail = (TextView)findViewById(R.id.nav_header_mail);
 
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -188,86 +106,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-    private void getUserProfile(){
-        userDB.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                user = dataSnapshot.getValue(User.class);
-
-                tvNHName = (TextView) findViewById(R.id.nav_header_title);
-                tvNHMail = (TextView) findViewById(R.id.nav_header_mail);
-
-                tvNHName.setText(user.getName());
-                tvNHMail.setText(user.getEmail());
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_settings) {
-            //
-        } else if (id == R.id.nav_insert_book) {
-            Intent intent = new Intent(this, InsertBook.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_edit_profile) {
-            Intent intent = new Intent(this, EditProfile.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_sign_out) {
-            firebaseAuth.getInstance().signOut();
-            finish();
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
 
 
     public void showAllBooks(){
@@ -288,15 +126,12 @@ public class MainActivity extends AppCompatActivity
     // prepare for CardView
     public static  class BookViewHolder extends RecyclerView.ViewHolder{
         View mView;
-        //Item currentItem;
 
         public BookViewHolder(final View itemView){
             super(itemView);
             mView = itemView;
 
         }
-
-
 
         public void setTitle(String title){
             TextView nameTxt = (TextView)mView.findViewById(R.id.cv_bookTitle);
@@ -353,14 +188,14 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-
+/*
 
     @Override
     protected void onStart() {
         super.onStart();
 
         firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>
-                (Book.class, R.layout.book_cardview, BookViewHolder.class, booksDB) {
+                (Book.class, R.layout.search_cardview, BookViewHolder.class, booksDB) {
             @Override
             protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
                 title = book.getTitle();
@@ -393,11 +228,9 @@ public class MainActivity extends AppCompatActivity
 
 
         mBookList.setAdapter(firebaseRecyclerAdapter);
-
-        getUserProfile();
     }
 
-
+*/
     @Override
     protected void onRestart() {
         super.onRestart();
@@ -409,16 +242,3 @@ public class MainActivity extends AppCompatActivity
 
 }
 
-
-
-/*
-private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
-                    "User ID: " + user.getUid());
-        } else {
-            ((TextView) findViewById(R.id.text_sign_in_status)).setText(
-                    "Error: sign in failed.");
-        }
-}
- */
