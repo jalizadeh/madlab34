@@ -1,5 +1,7 @@
 package com.example.sergio.madlab;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -279,6 +282,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             scanIntegrator.initiateScan();
         }
         if (v == getBarcodeData){
+            closeKeyboard();
             if (etISBN.getText().toString().isEmpty()){
                 etISBN.setError("Insert the ISBN");
                 etISBN.requestFocus();
@@ -288,6 +292,13 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                 task.execute(GOOGLE_ISBN_LINK + etISBN.getText().toString());
             }
         }
+    }
+
+
+    public void closeKeyboard() {
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (null != this.getCurrentFocus())
+            imm.hideSoftInputFromWindow(this.getCurrentFocus().getApplicationWindowToken(), 0);
     }
 
 

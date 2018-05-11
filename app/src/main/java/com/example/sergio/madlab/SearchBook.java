@@ -19,7 +19,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,10 +31,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
@@ -49,8 +54,9 @@ public class SearchBook extends AppCompatActivity {
     private String dbBio="";
 
     //nav header
-    private TextView tvNHName;
-    private TextView tvNHMail;
+    private Spinner spSearchFactor;
+    private EditText etSearchValue;
+    private Button btnDoSearch;
 
     private String isbn="";
     private String title="";
@@ -61,6 +67,9 @@ public class SearchBook extends AppCompatActivity {
     private String tags="";
     private String condition="";
 
+
+    private String searchFactor;
+    private String searchValue;
 
     //
     ImageView bookThumbnail;
@@ -77,6 +86,7 @@ public class SearchBook extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference database, userDB, booksDB;
+
     //private StorageReference storageRef;
 
     FirebaseRecyclerAdapter<Book, BookViewHolder> firebaseRecyclerAdapter;
@@ -96,6 +106,7 @@ public class SearchBook extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
+        //booksDB = database.child("books");
         userDB = database.child("users");
 
 
@@ -103,18 +114,27 @@ public class SearchBook extends AppCompatActivity {
         userEmail = firebaseUser.getEmail().replace(",",",,").replace(".", ",");
 
 
+
+        //setViews();
+        spSearchFactor = (Spinner) findViewById(R.id.sp_searchFactor);
+        etSearchValue = (EditText) findViewById(R.id.searchBar);
+        btnDoSearch = (Button) findViewById(R.id.btnSearchBook);
+
+
+
+
     }
 
 
 
 
-    public void showAllBooks(){
+    public void findBooks(){
         //shows all books
-        database = FirebaseDatabase.getInstance().getReference();
+        //database = FirebaseDatabase.getInstance().getReference();
         booksDB = database.child("books");
         booksDB.keepSynced(true);
 
-        mBookList = (RecyclerView) findViewById(R.id.myrecycleview);
+        mBookList = (RecyclerView) findViewById(R.id.searchrecycleview);
         mBookList.hasFixedSize();
         mBookList.setLayoutManager(new LinearLayoutManager(this));
         //----
@@ -183,60 +203,91 @@ public class SearchBook extends AppCompatActivity {
 
 
 
-    public void viewProfile(View view){
-        Intent intent = new Intent(this, ViewProfile.class);
-        startActivity(intent);
-    }
 
-/*
+    public void doSearch(View view){
+        searchFactor = spSearchFactor.getSelectedItem().toString();
+        searchValue = etSearchValue.getText().toString();
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+        findBooks();
 
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>
-                (Book.class, R.layout.search_cardview, BookViewHolder.class, booksDB) {
+        Query firebaseSearchQuery = booksDB.orderByChild(searchFactor)
+                .startAt(searchValue)
+                .endAt(searchValue + "\uf8ff");
+
+
+        firebaseSearchQuery.addChildEventListener(new ChildEventListener() {
             @Override
-            protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
-                title = book.getTitle();
-                isbn = book.getIsbn();
-                viewHolder.setTitle(title);
-                viewHolder.setImage(isbn);
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>(
+                        Book.class,
+                        R.layout.search_cardview,
+                        BookViewHolder.class,
+                        //booksDB.orderByChild(searchFactor).startAt(searchValue).endAt(searchValue + "\uf8ff")) {
+                        booksDB) {
+                    @Override
+                    protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
+                        title = book.getTitle();
+                        isbn = book.getIsbn();
+                        viewHolder.setTitle(title);
+                        viewHolder.setImage(isbn);
 
-                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        //firebaseRecyclerAdapter.getRef(position).removeValue();
-                        String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
-                        //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(getBaseContext(), ViewBook.class);
-                        intent.putExtra("keyISBN", keyISBN);
-                        startActivity(intent);
+                        Toast.makeText(getApplicationContext(),searchFactor + searchValue,Toast.LENGTH_LONG).show();
+
+                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                //firebaseRecyclerAdapter.getRef(position).removeValue();
+                                String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
+                                //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(getBaseContext(), ViewBook.class);
+                                intent.putExtra("keyISBN", keyISBN);
+                                startActivity(intent);
+                            }
+                        });
+                        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View view) {
+                                Toast.makeText(getApplicationContext(),isbn,Toast.LENGTH_LONG).show();
+                                return false;
+                            }
+                        });
+                        //viewHolder.setAtuthor(book.getAuthor());
+                        //viewHolder.setGenre(book.getGenre());
                     }
-                });
-                viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View view) {
-                        Toast.makeText(getApplicationContext(),isbn,Toast.LENGTH_LONG).show();
-                        return false;
-                    }
-                });
-                //viewHolder.setAtuthor(book.getAuthor());
-                //viewHolder.setGenre(book.getGenre());
+                };
             }
-        };
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
 
 
         mBookList.setAdapter(firebaseRecyclerAdapter);
+
+
+
     }
 
-*/
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        showAllBooks();
-        //getUserProfile();
-    }
+
 
 
 
