@@ -99,8 +99,6 @@
     <string name="msg">Please, enable all permissions</string>
 
 
-
-
     <!--errors-->
     <string name="error_invalid_isbn">Fill the ISBN</string>
     <string name="error_invalid_title">Fill the title</string>
@@ -109,9 +107,6 @@
     <string name="error_invalid_edityear">Fill the year</string>
     <string name="error_invalid_genre">Select a genre</string>
     <string name="error_invalid_condition">Fill the book condition</string>
-
-
-
 
 
     <string name="title_home">Home</string>
@@ -203,6 +198,7 @@
     <string name="downloaded">Downloaded</string>
     <string name="downloading">Downloading…</string>
     <string name="error_login">Login error</string>
+    <string name="title_activity_maps">Map</string>
 
 
 </resources>
