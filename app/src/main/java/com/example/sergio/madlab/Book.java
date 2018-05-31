@@ -111,5 +111,5 @@ public class Book {
 
     public double getLongitude() { return longitude; }
 
-    public void setLongitude(double latitude) { this.longitude = longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
 }
