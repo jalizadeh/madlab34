@@ -190,7 +190,8 @@ public class MainActivity extends AppCompatActivity
 
 
     private void getUserProfile(){
-        userDB.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        String uID = firebaseAuth.getUid();
+        userDB.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
@@ -255,8 +256,9 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_edit_profile) {
             Intent intent = new Intent(this, EditProfile.class);
             startActivity(intent);
-        } else if (id == R.id.nav_manage) {
-
+        } else if (id == R.id.nav_chat) {
+            Intent intent = new Intent(this, Chat.class);
+            startActivity(intent);
         } else if (id == R.id.nav_sign_out) {
             firebaseAuth.getInstance().signOut();
             finish();

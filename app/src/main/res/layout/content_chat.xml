@@ -4,15 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".SearchBook"
+    tools:context=".Chat"
     android:orientation="vertical">
 
+
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/searchrecycleview"
+        android:id="@+id/chatRecycleView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:dividerHeight="0dp">
+        android:dividerHeight="0dp"
+        android:layout_weight=".9">
 
     </android.support.v7.widget.RecyclerView>
 

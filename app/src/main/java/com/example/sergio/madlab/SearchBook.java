@@ -1,17 +1,12 @@
 package com.example.sergio.madlab;
 
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,25 +14,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -67,19 +58,15 @@ public class SearchBook extends AppCompatActivity {
     private String tags="";
     private String condition="";
 
-
     private String searchFactor;
     private String searchValue;
 
     //
     ImageView bookThumbnail;
-    private RecyclerView mBookList;
+    private RecyclerView sBookList;
 
     private String userEmail;
     private User user;
-
-    private SharedPreferences profile;
-    private SharedPreferences.Editor editor;
 
 
     //
@@ -106,38 +93,90 @@ public class SearchBook extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
-        //booksDB = database.child("books");
         userDB = database.child("users");
+
+        //booksDB = database.child("books");
+        //booksDB.keepSynced(true);
+
+
 
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         userEmail = firebaseUser.getEmail().replace(",",",,").replace(".", ",");
 
 
+        /*
+        DatabaseReference bDB = database.push();
+        final String refID = bDB.getKey();
+        bDB.child("test").setValue(refID);
+        bDB.child("test3").setValue(firebaseUser.getUid().toString());
+        */
 
         //setViews();
         spSearchFactor = (Spinner) findViewById(R.id.sp_searchFactor);
         etSearchValue = (EditText) findViewById(R.id.searchBar);
-        btnDoSearch = (Button) findViewById(R.id.btnSearchBook);
+        //btnDoSearch = (Button) findViewById(R.id.btnSearchBook);
 
 
+        //make recView ready
+        findBooks();
 
 
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_search_book, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+
+
+    //verify if the fields are set well
+    public boolean validateValues(){
+        if (spSearchFactor.getSelectedItem().toString().equals("Search by")){
+            TextView errorText = (TextView) spSearchFactor.getSelectedView();
+            errorText.setError("");
+            errorText.setTextColor(Color.RED);//just to highlight that this is an error
+            errorText.setText(R.string.error_invalid_search_factor);//changes the selected item text to this
+            errorText.requestFocus();
+            return false;
+        }
+
+        if (etSearchValue.getText().toString().isEmpty()){
+            etSearchValue.setError(getString(R.string.error_empty_searchvalue));
+            etSearchValue.requestFocus();
+            return false;
+        }
+
+        closeKeyboard();
+
+        return true;
+    }
+
+
+
+
+    //it will search for the searchValue
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(validateValues())
+            doSearch();
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
 
     public void findBooks(){
         //shows all books
-        //database = FirebaseDatabase.getInstance().getReference();
-        booksDB = database.child("books");
-        booksDB.keepSynced(true);
-
-        mBookList = (RecyclerView) findViewById(R.id.searchrecycleview);
-        mBookList.hasFixedSize();
-        mBookList.setLayoutManager(new LinearLayoutManager(this));
-        //----
+        sBookList = (RecyclerView) findViewById(R.id.searchrecycleview);
+        sBookList.hasFixedSize();
+        sBookList.setLayoutManager(new LinearLayoutManager(this));
     }
 
 
@@ -150,16 +189,23 @@ public class SearchBook extends AppCompatActivity {
         public BookViewHolder(final View itemView){
             super(itemView);
             mView = itemView;
+        }
 
+        public void showView(){
+            mView.setVisibility(View.VISIBLE);
+        }
+
+        public void hideView(){
+            mView.setVisibility(View.GONE);
         }
 
         public void setTitle(String title){
-            TextView nameTxt = (TextView)mView.findViewById(R.id.cv_bookTitle);
+            TextView nameTxt = (TextView)mView.findViewById(R.id.cvs_bookTitle);
             nameTxt.setText(title);
         }
 
         public void setImage(String keyISBN){
-            final ImageView bookThumb = (ImageView)mView.findViewById(R.id.cv_bookImage);
+            final ImageView bookThumb = (ImageView)mView.findViewById(R.id.cvs_bookImage);
 
             String bookNameWithISBN = keyISBN + ".jpg";
             StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("images/books/" + bookNameWithISBN);
@@ -204,92 +250,163 @@ public class SearchBook extends AppCompatActivity {
 
 
 
-    public void doSearch(View view){
-        searchFactor = spSearchFactor.getSelectedItem().toString();
+
+
+    public void doSearch(){
+        searchFactor = spSearchFactor.getSelectedItem().toString().toLowerCase();
         searchValue = etSearchValue.getText().toString();
 
-        findBooks();
 
+        booksDB = database.child("books");
+
+        //my temporary solution
+        //because the project is small enough, i will fetch all the data from "books"
+        //then, i will compare book.getTitle() with searchValue
+        //if yes, i will show it, else won`t
+
+        /*
         Query firebaseSearchQuery = booksDB.orderByChild(searchFactor)
                 .startAt(searchValue)
                 .endAt(searchValue + "\uf8ff");
+        */
 
 
-        firebaseSearchQuery.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>(
-                        Book.class,
-                        R.layout.search_cardview,
-                        BookViewHolder.class,
-                        //booksDB.orderByChild(searchFactor).startAt(searchValue).endAt(searchValue + "\uf8ff")) {
-                        booksDB) {
-                    @Override
-                    protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
-                        title = book.getTitle();
-                        isbn = book.getIsbn();
-                        viewHolder.setTitle(title);
-                        viewHolder.setImage(isbn);
 
-                        Toast.makeText(getApplicationContext(),searchFactor + searchValue,Toast.LENGTH_LONG).show();
-
-                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                //firebaseRecyclerAdapter.getRef(position).removeValue();
-                                String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
-                                //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(getBaseContext(), ViewBook.class);
-                                intent.putExtra("keyISBN", keyISBN);
-                                startActivity(intent);
-                            }
-                        });
-                        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                            @Override
-                            public boolean onLongClick(View view) {
-                                Toast.makeText(getApplicationContext(),isbn,Toast.LENGTH_LONG).show();
-                                return false;
-                            }
-                        });
-                        //viewHolder.setAtuthor(book.getAuthor());
-                        //viewHolder.setGenre(book.getGenre());
-                    }
-                };
-            }
+        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>(
+                Book.class,
+                R.layout.search_cardview,
+                BookViewHolder.class,
+                booksDB) {
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
+                title = book.getTitle();
+                author = book.getAuthor();
+                publisher = book.getPublisher();
+
+                switch (searchFactor) {
+                    case "title":
+                        if(title.toLowerCase().contains(searchValue.toLowerCase())){
+                            // viewHolder.showView();
+                            // viewHolder.itemView.setVisibility(View.VISIBLE);
+                            isbn = book.getIsbn();
+                            viewHolder.setTitle(title);
+                            viewHolder.setImage(isbn);
+                            //Toast.makeText(getApplicationContext(),searchFactor +" - "+ searchValue,Toast.LENGTH_LONG).show();
+                            //viewHolder.setAtuthor(book.getAuthor());
+                            //viewHolder.setGenre(book.getGenre());
+                            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    //firebaseRecyclerAdapter.getRef(position).removeValue();
+                                    String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
+                                    //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(getBaseContext(), ViewBook.class);
+                                    intent.putExtra("keyISBN", keyISBN);
+                                    startActivity(intent);
+                                }
+                            });
+                        } else {
+
+                            //ViewGroup.MarginLayoutParams pm = (ViewGroup.MarginLayoutParams) viewHolder.mView.getLayoutParams();
+                            //pm.setMargins(0, 0, 0, 0);
+                            //viewHolder.mView.requestLayout();
+
+                            ViewGroup.LayoutParams params = viewHolder.mView.getLayoutParams();
+                            params.height = 0;
+                            params.width = 0;
+                            viewHolder.mView.setLayoutParams(params);
+
+                            viewHolder.mView.setVisibility(View.GONE);
+                        }
+                        break;
+
+                    case "author":
+                        if(author.toLowerCase().contains(searchValue.toLowerCase())){
+                            // viewHolder.showView();
+                            // viewHolder.itemView.setVisibility(View.VISIBLE);
+                            isbn = book.getIsbn();
+                            viewHolder.setTitle(title);
+                            viewHolder.setImage(isbn);
+                            //Toast.makeText(getApplicationContext(),searchFactor +" - "+ searchValue,Toast.LENGTH_LONG).show();
+                            //viewHolder.setAtuthor(book.getAuthor());
+                            //viewHolder.setGenre(book.getGenre());
+                            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    //firebaseRecyclerAdapter.getRef(position).removeValue();
+                                    String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
+                                    //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(getBaseContext(), ViewBook.class);
+                                    intent.putExtra("keyISBN", keyISBN);
+                                    startActivity(intent);
+                                }
+                            });
+                        } else {
+
+                            //ViewGroup.MarginLayoutParams pm = (ViewGroup.MarginLayoutParams) viewHolder.mView.getLayoutParams();
+                            //pm.setMargins(0, 0, 0, 0);
+                            //viewHolder.mView.requestLayout();
+
+                            ViewGroup.LayoutParams params = viewHolder.mView.getLayoutParams();
+                            params.height = 0;
+                            params.width = 0;
+                            viewHolder.mView.setLayoutParams(params);
+
+                            viewHolder.mView.setVisibility(View.GONE);
+                        }
+                        break;
+
+
+                    case "publisher":
+                        if(publisher.toLowerCase().contains(searchValue.toLowerCase())){
+                            // viewHolder.showView();
+                            // viewHolder.itemView.setVisibility(View.VISIBLE);
+                            isbn = book.getIsbn();
+                            viewHolder.setTitle(title);
+                            viewHolder.setImage(isbn);
+                            //Toast.makeText(getApplicationContext(),searchFactor +" - "+ searchValue,Toast.LENGTH_LONG).show();
+                            //viewHolder.setAtuthor(book.getAuthor());
+                            //viewHolder.setGenre(book.getGenre());
+                            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    //firebaseRecyclerAdapter.getRef(position).removeValue();
+                                    String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
+                                    //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(getBaseContext(), ViewBook.class);
+                                    intent.putExtra("keyISBN", keyISBN);
+                                    startActivity(intent);
+                                }
+                            });
+                        } else {
+
+                            //ViewGroup.MarginLayoutParams pm = (ViewGroup.MarginLayoutParams) viewHolder.mView.getLayoutParams();
+                            //pm.setMargins(0, 0, 0, 0);
+                            //viewHolder.mView.requestLayout();
+
+                            ViewGroup.LayoutParams params = viewHolder.mView.getLayoutParams();
+                            params.height = 0;
+                            params.width = 0;
+                            viewHolder.mView.setLayoutParams(params);
+
+                            viewHolder.mView.setVisibility(View.GONE);
+                        }
+                        break;
+                }
 
             }
+        };
 
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-
-        mBookList.setAdapter(firebaseRecyclerAdapter);
-
-
-
+        sBookList.setAdapter(firebaseRecyclerAdapter);
     }
 
 
-
-
+    public void closeKeyboard() {
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (null != this.getCurrentFocus())
+            imm.hideSoftInputFromWindow(this.getCurrentFocus().getApplicationWindowToken(), 0);
+    }
 
 }
 
