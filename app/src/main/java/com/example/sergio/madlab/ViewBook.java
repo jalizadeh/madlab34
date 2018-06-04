@@ -1,16 +1,19 @@
 package com.example.sergio.madlab;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +43,7 @@ public class ViewBook extends AppCompatActivity {
 
 
     String keyISBN;
+    String userDisplayName;
 
     private ImageView profileImage;
     private ProgressDialog progressDialog;
@@ -90,9 +94,15 @@ public class ViewBook extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_book);
 
+
+
+
+
         //get the ISBN from MainActivity
         keyISBN = getIntent().getStringExtra("keyISBN");
+        userDisplayName = getIntent().getStringExtra("userDisplayName");
         //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
+
 
 
         //Firebase
@@ -110,9 +120,9 @@ public class ViewBook extends AppCompatActivity {
         //prepare Text Views
         setViews();
 
-
         getBookData();
         downloadBookImage();
+
     }
 
 
@@ -123,6 +133,7 @@ public class ViewBook extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 book = dataSnapshot.getValue(Book.class);
                 setTexts();
+                prepareChatButton();
             }
 
             @Override
@@ -181,6 +192,7 @@ public class ViewBook extends AppCompatActivity {
         tGenre.setText(book.getGenre());
         tTags.setText(book.getTags());
         tCondition.setText(book.getCondition());
+        //Toast.makeText(this, book.getUser().toString(), Toast.LENGTH_SHORT).show();
     }
 
     /*
@@ -226,6 +238,28 @@ public class ViewBook extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+
+    public void prepareChatButton(){
+        //set floating button
+        final String bookOwnerId = book.getUser();
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.btn_startChat);
+
+        //first check if the Owner and Current user are the same?
+        if (bookOwnerId .equals(authUser.getUid())) {
+            fab.setVisibility(View.GONE);
+        } else {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(ViewBook.this, Chat.class);
+                    intent.putExtra("chatWith", bookOwnerId);
+                    intent.putExtra("userDisplayName", userDisplayName);
+                    startActivity(intent);
+                }
+            });
+        }
     }
 
 }

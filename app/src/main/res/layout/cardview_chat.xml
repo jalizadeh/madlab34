@@ -14,21 +14,17 @@
             android:id="@+id/cvs_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_margin="@dimen/margin"
             android:text="Message"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/colorAccent"
             android:textSize="18sp" />
 
         <TextView
             android:id="@+id/cvs_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_margin="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
             android:text="time"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/colorAccent"
             android:textSize="10sp" />
 
 

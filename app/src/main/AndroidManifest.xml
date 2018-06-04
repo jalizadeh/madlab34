@@ -55,8 +55,11 @@
             android:name=".SearchBook"
             android:label="@string/title_activity_searchBook"></activity>
         <activity
+            android:name=".AllChats"
+            android:label="@string/title_activity_all_chats"></activity>
+        <activity
             android:name=".Chat"
-            android:label="@string/title_activity_searchBook"></activity>
+            android:label="@string/title_activity_chats"></activity>
     </application>
 
 </manifest>

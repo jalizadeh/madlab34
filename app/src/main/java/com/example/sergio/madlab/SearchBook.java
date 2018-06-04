@@ -274,7 +274,7 @@ public class SearchBook extends AppCompatActivity {
 
         firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>(
                 Book.class,
-                R.layout.search_cardview,
+                R.layout.cardview_search,
                 BookViewHolder.class,
                 booksDB) {
 

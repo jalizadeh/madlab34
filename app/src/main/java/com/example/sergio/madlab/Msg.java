@@ -9,7 +9,7 @@ public class Msg {
     public Msg(){}
 
     public String getTime() {
-        return time;
+        return time.toString();
     }
 
     public void setTime(String tiemstamp) {

@@ -72,6 +72,8 @@
     <string name="title_activity_register">Sign in</string>
     <string name="title_activity_view_book">Book Details</string>
     <string name="title_activity_searchBook">Search Book</string>
+    <string name="title_activity_all_chats">Search Book</string>
+    <string name="title_activity_chats">Search Book</string>
 
 
     <!-- Strings related to login -->
