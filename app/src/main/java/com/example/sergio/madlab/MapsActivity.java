@@ -5,12 +5,15 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.FirebaseError;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,14 +48,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-        putBookLocations(database);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
+        /*GeoFire geoFire = new GeoFire(ref);
+        geoFire.setLocation("key1", new GeoLocation(37.7853889, -122.4056973), new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    System.err.println("There was an error saving the location to GeoFire: " + error);
+                } else {
+                    System.out.println("Location saved on server successfully!");
+                }
+            }
+        });*/
+        //putBookLocations(ref);
 
         // Add a marker in Sydney and move the camera
         /*LatLng torino = new LatLng(45.066667, 7.7);
         mMap.addMarker(new MarkerOptions().position(torino).title("Marker in Torino"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(torino));*/
     }
+
+    //TODO use geofire instead of attributes in the Book class
 
     private void putBookLocations(DatabaseReference database) {
         database.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -62,8 +78,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Iterable<DataSnapshot> bookChildren = bookSnapshot.getChildren();
                 for (DataSnapshot book : bookChildren) {
                     Book b = book.getValue(Book.class);
-                    LatLng location = new LatLng(b.getLatitude(), b.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(location).title(b.getTitle()));
+                    //LatLng location = new LatLng(b.getLatitude(), b.getLongitude());
+                    //mMap.addMarker(new MarkerOptions().position(location).title(b.getTitle()));
                 }
             }
 

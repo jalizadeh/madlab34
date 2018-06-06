@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity
                 tvNHName = (TextView) findViewById(R.id.nav_header_title);
                 tvNHMail = (TextView) findViewById(R.id.nav_header_mail);
 
+
                 tvNHName.setText(user.getName());
                 tvNHMail.setText(user.getEmail());
             }

@@ -40,7 +40,10 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -460,6 +463,26 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         book.setCondition(condition);
         book.setUser(userID);
 
+        insertLocation();
+
         booksDB.child(isbn).setValue(book);
+    }
+
+    private void insertLocation() {
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
+        GeoFire geoFire = new GeoFire(ref);
+        //TODO do this with current location or location chosen by user
+        geoFire.setLocation(isbn, new GeoLocation(-90 + 180 * new Random().nextDouble(), -180 + 360 * new Random().nextDouble()), new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    System.err.println("There was an error saving the location to GeoFire: " + error);
+                } else {
+                    System.out.println("Location saved on server successfully!");
+                }
+            }
+        });
+
     }
 }
