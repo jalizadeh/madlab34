@@ -26,56 +26,45 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_margin="5dp">
+        android:layout_margin="5dp"
+        android:orientation="vertical">
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
-
-        <Spinner
-            android:id="@+id/sp_searchFactor"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:spinnerMode="dialog"
-            android:entries="@array/search_factor">
+            android:orientation="vertical">
 
-        </Spinner>
+            <Spinner
+                android:id="@+id/sp_searchFactor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/search_factor"
+                android:spinnerMode="dialog">
 
-        <EditText
-            android:id="@+id/searchBar"
+            </Spinner>
+
+            <EditText
+                android:id="@+id/searchBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:shadowColor="@color/cardview_dark_background" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:shadowColor="@color/cardview_dark_background"
-            />
-    </LinearLayout>
+            android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_weight="0.1">
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/searchrecycleview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:dividerHeight="0dp">
 
-        <include layout="@layout/content_search" />
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_weight="0.3">
-
-        <Button
-            android:id="@+id/btnSearchBook"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Search"
-            android:onClick="doSearch"/>
-    </LinearLayout>
+            </android.support.v7.widget.RecyclerView>
+        </LinearLayout>
 
     </LinearLayout>
 </LinearLayout>

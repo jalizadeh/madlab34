@@ -109,10 +109,10 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
                                 }
                             } else{
                                 firebaseAuth.signInWithEmailAndPassword(email, password);
-
-                                User user = new User("", name, email, city, "");
+                                String uID = firebaseAuth.getUid();
+                                User user = new User(uID, name, email, city, "");
                                 String userID = email.replace(",",",,").replace(".", ",");
-                                db.child("users").child(userID).setValue(user);
+                                db.child("users").child(uID).setValue(user);
 
                                 Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(mainActivity);

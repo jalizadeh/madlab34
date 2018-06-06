@@ -37,10 +37,10 @@
 
     <string-array name="search_factor">
         <item>Search by</item>
-        <item>Title</item>
-        <item>Author</item>
-        <item>Publisher</item>
-        <item>Date</item>
+        <item> > Title</item>
+        <item> > Author</item>
+        <item> > Publisher</item>
+        <item> > Date</item>
     </string-array>
     <string name="book_tags">Tags</string>
     <string name="book_condition">Condition</string>
@@ -72,6 +72,8 @@
     <string name="title_activity_register">Sign in</string>
     <string name="title_activity_view_book">Book Details</string>
     <string name="title_activity_searchBook">Search Book</string>
+    <string name="title_activity_all_chats">Search Book</string>
+    <string name="title_activity_chats">Search Book</string>
 
 
     <!-- Strings related to login -->
@@ -108,6 +110,8 @@
     <string name="error_invalid_genre">Select a genre</string>
     <string name="error_invalid_condition">Fill the book condition</string>
 
+    <string name="error_invalid_search_factor">Select a criteria</string>
+    <string name="error_empty_searchvalue">Please fill with a text</string>
 
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>

@@ -23,6 +23,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
@@ -32,11 +33,27 @@
             android:layout_height="fill_parent"
             android:orientation="vertical" >
 
-            <ImageView
-                android:id="@+id/ivBook"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:background="@mipmap/no_image"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/ivBook"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@mipmap/no_image"/>
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btn_startChat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="@dimen/fab_margin"
+                    app:srcCompat="@android:drawable/sym_action_chat" />
+            </RelativeLayout>
+
+
 
 
             <TextView
@@ -139,20 +156,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/margin" />
 
-            <!--<Button
-                android:id="@+id/btn_ib"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:text="My Books" />-->
 
 
         </LinearLayout>
 
+
     </ScrollView>
-
-
-
 
 
 </LinearLayout>

@@ -190,7 +190,8 @@ public class MainActivity extends AppCompatActivity
 
 
     private void getUserProfile(){
-        userDB.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        String uID = firebaseAuth.getUid();
+        userDB.child(uID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
@@ -256,8 +257,9 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_edit_profile) {
             Intent intent = new Intent(this, EditProfile.class);
             startActivity(intent);
-        } else if (id == R.id.nav_manage) {
-
+        } else if (id == R.id.nav_chat) {
+            Intent intent = new Intent(this, AllChats.class);
+            startActivity(intent);
         } else if (id == R.id.nav_sign_out) {
             firebaseAuth.getInstance().signOut();
             finish();
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
 
         firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>
-                (Book.class, R.layout.book_cardview, BookViewHolder.class, booksDB) {
+                (Book.class, R.layout.cardview_book, BookViewHolder.class, booksDB) {
             @Override
             protected void populateViewHolder(BookViewHolder viewHolder, Book book,final int position) {
                 title = book.getTitle();
@@ -377,6 +379,7 @@ public class MainActivity extends AppCompatActivity
                         //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(getBaseContext(), ViewBook.class);
                         intent.putExtra("keyISBN", keyISBN);
+                        intent.putExtra("userDisplayName", tvNHName.getText().toString());
                         startActivity(intent);
                     }
                 });
