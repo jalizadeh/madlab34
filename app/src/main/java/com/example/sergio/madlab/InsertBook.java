@@ -27,12 +27,25 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import com.example.sergio.madlab.Classes.User;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -447,6 +460,26 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         book.setCondition(condition);
         book.setUser(userID);
 
+        insertLocation();
+
         booksDB.child(isbn).setValue(book);
+    }
+
+    private void insertLocation() {
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
+        GeoFire geoFire = new GeoFire(ref);
+        //TODO do this with current location or location chosen by user
+        geoFire.setLocation(isbn, new GeoLocation(-90 + 180 * new Random().nextDouble(), -180 + 360 * new Random().nextDouble()), new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    System.err.println("There was an error saving the location to GeoFire: " + error);
+                } else {
+                    System.out.println("Location saved on server successfully!");
+                }
+            }
+        });
+
     }
 }
