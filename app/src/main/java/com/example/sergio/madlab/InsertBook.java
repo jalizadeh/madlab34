@@ -496,7 +496,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
         GeoFire geoFire = new GeoFire(ref);
         //TODO do this with current location or location chosen by user
-        geoFire.setLocation(isbn, new GeoLocation(-90 + 180 * new Random().nextDouble(), -180 + 360 * new Random().nextDouble()), new GeoFire.CompletionListener() {
+        geoFire.setLocation(isbn, new GeoLocation(45.029739 + 0.084518 * new Random().nextDouble(), 7.615670 + 0.092441 * new Random().nextDouble()), new GeoFire.CompletionListener() {
             @Override
             public void onComplete(String key, DatabaseError error) {
                 if (error != null) {
