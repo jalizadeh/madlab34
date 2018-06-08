@@ -15,7 +15,6 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -35,31 +34,36 @@
         </activity>
         <activity
             android:name=".ViewProfile"
-            android:label="@string/activity_viewProfile"></activity>
+            android:label="@string/activity_viewProfile" />
         <activity
             android:name=".EditProfile"
-            android:label="@string/activity_editProfile"></activity>
+            android:label="@string/activity_editProfile" />
         <activity
             android:name=".InsertBook"
-            android:label="@string/activity_insertBook"></activity>
+            android:label="@string/activity_insertBook" />
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main"></activity>
+            android:label="@string/title_activity_main" />
         <activity
             android:name=".Register"
-            android:label="@string/title_activity_register"></activity>
+            android:label="@string/title_activity_register" />
         <activity
             android:name=".ViewBook"
-            android:label="@string/title_activity_register"></activity>
+            android:label="@string/title_activity_view_book"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".SearchBook"
-            android:label="@string/title_activity_searchBook"></activity>
+            android:label="@string/title_activity_searchBook" />
         <activity
             android:name=".AllChats"
-            android:label="@string/title_activity_all_chats"></activity>
+            android:label="@string/title_activity_all_chats" />
         <activity
             android:name=".Chat"
-            android:label="@string/title_activity_chats"></activity>
+            android:label="@string/title_activity_chats" />
+        <activity
+            android:name=".AboutUs"
+            android:label="@string/title_activity_about_us"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

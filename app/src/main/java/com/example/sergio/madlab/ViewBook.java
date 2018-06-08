@@ -7,7 +7,10 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -18,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sergio.madlab.Classes.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,12 +39,15 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.IOException;
 
+import com.example.sergio.madlab.Classes.*;
+
 
 public class ViewBook extends AppCompatActivity {
 
-    //Toolbar
-    Toolbar toolbar;
-
+    //for startchat btn in menu
+    private Menu menu;
+    private FloatingActionButton fab;
+    private Boolean showChatButton = false;
 
     String keyISBN;
     String userDisplayName;
@@ -73,11 +80,14 @@ public class ViewBook extends AppCompatActivity {
     private TextView tGenre;
     private TextView tTags;
     private TextView tCondition;
+    private TextView tBookOwner;
+
 
 
     //Firebase
     private String userEmail;
     private String userID;
+    private String bookOwnerId, bookOwnerName;
     private FirebaseUser authUser;
     private StorageReference storageRef;
     private DatabaseReference database;
@@ -95,14 +105,14 @@ public class ViewBook extends AppCompatActivity {
         setContentView(R.layout.activity_view_book);
 
 
+        final Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar_viewBook);
+        setSupportActionBar(mToolbar);
 
-
+        fab = (FloatingActionButton) findViewById(R.id.btn_startChat);
 
         //get the ISBN from MainActivity
         keyISBN = getIntent().getStringExtra("keyISBN");
         userDisplayName = getIntent().getStringExtra("userDisplayName");
-        //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
-
 
 
         //Firebase
@@ -110,11 +120,14 @@ public class ViewBook extends AppCompatActivity {
         userDB = database.child("users");
         booksDB = database.child("books");
 
+
+
         String bookNameWithISBN = keyISBN + ".jpg";
         storageRef = FirebaseStorage.getInstance().getReference().child("images/books/" + bookNameWithISBN);
 
         authUser = FirebaseAuth.getInstance().getCurrentUser();
-        userEmail = authUser.getEmail().replace(",", ",,").replace(".", ",");
+        userID = authUser.getUid();
+        //userEmail = authUser.getEmail().replace(",", ",,").replace(".", ",");
 
 
         //prepare Text Views
@@ -123,6 +136,59 @@ public class ViewBook extends AppCompatActivity {
         getBookData();
         downloadBookImage();
 
+
+        final CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
+        collapsingToolbarLayout.setTitle(" ");
+
+        //it manages showing or hiding chat button on Toolbar
+        AppBarLayout mAppBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+        mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            boolean isShow = false;
+            int scrollRange = -1;
+
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                if (scrollRange == -1) {
+                    scrollRange = appBarLayout.getTotalScrollRange();
+                }
+                if (scrollRange + verticalOffset == 0) {
+                    isShow = true;
+
+                    if (showChatButton)
+                        showOption(R.id.action_start_chat);
+
+                    collapsingToolbarLayout.setTitle(getString(R.string.title_activity_view_book));
+                } else if (isShow) {
+                    isShow = false;
+
+                    if(showChatButton)
+                        hideOption(R.id.action_start_chat);
+
+                    //carefull there should a space between double quote otherwise it wont work
+                    collapsingToolbarLayout.setTitle(" ");
+                }
+            }
+        });
+
+    }
+
+
+
+    private void getBookOwner() {
+        userDB.child(bookOwnerId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user = dataSnapshot.getValue(User.class);
+
+                bookOwnerName = user.getName();
+
+                tBookOwner.setText(bookOwnerName);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
 
@@ -145,26 +211,46 @@ public class ViewBook extends AppCompatActivity {
     }
 
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //MenuInflater inflater = getMenuInflater();
-        //inflater.inflate(R.menu.menu_view_profile, menu);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        this.menu = menu;
+        getMenuInflater().inflate(R.menu.menu_view_book, menu);
+        hideOption(R.id.action_start_chat);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.action_edit:
-                //Edit user profile
-                //Intent edit = new Intent(ViewBook.this, EditProfile.class);
-                //startActivity(edit);
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_start_chat) {
+            if(showChatButton){
+                Intent intent = new Intent(ViewBook.this, Chat.class);
+                intent.putExtra("chatWith", bookOwnerId);
+                intent.putExtra("userDisplayName", userDisplayName);
+                intent.putExtra("bookOwnerName", bookOwnerName);
+                startActivity(intent);
                 return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            }
         }
+
+        return super.onOptionsItemSelected(item);
     }
+
+
+    private void hideOption(int id) {
+        MenuItem item = menu.findItem(id);
+        item.setVisible(false);
+    }
+
+    private void showOption(int id) {
+        MenuItem item = menu.findItem(id);
+        item.setVisible(true);
+    }
+
 
 
 
@@ -178,6 +264,7 @@ public class ViewBook extends AppCompatActivity {
         tGenre = (TextView) findViewById(R.id.textGenre);
         tTags = (TextView) findViewById(R.id.textTags);
         tCondition = (TextView) findViewById(R.id.textCondition);
+        tBookOwner = (TextView) findViewById(R.id.textBookOwner);
 
         bookImage = (ImageView) findViewById(R.id.ivBook);
     }
@@ -195,23 +282,6 @@ public class ViewBook extends AppCompatActivity {
         //Toast.makeText(this, book.getUser().toString(), Toast.LENGTH_SHORT).show();
     }
 
-    /*
-    private void getUserReference(){
-        ref.child(email).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                user = dataSnapshot.getValue(User.class);
-                setTexts();
-                setTitle(user.getName());
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-    */
-
 
     public void downloadBookImage() {
         try {
@@ -226,7 +296,7 @@ public class ViewBook extends AppCompatActivity {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                   // Toast.makeText(ViewBook.this, "No book image found", Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(ViewBook.this, "No book image found", Toast.LENGTH_SHORT).show();
                 }
             }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
@@ -242,13 +312,15 @@ public class ViewBook extends AppCompatActivity {
 
 
     public void prepareChatButton(){
+
         //set floating button
-        final String bookOwnerId = book.getUser();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.btn_startChat);
+        bookOwnerId = book.getUser();
+        getBookOwner();
 
         //first check if the Owner and Current user are the same?
-        if (bookOwnerId .equals(authUser.getUid())) {
+        if (bookOwnerId .equals(userID)) {
             fab.setVisibility(View.GONE);
+            showChatButton = false;
         } else {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -256,9 +328,11 @@ public class ViewBook extends AppCompatActivity {
                     Intent intent = new Intent(ViewBook.this, Chat.class);
                     intent.putExtra("chatWith", bookOwnerId);
                     intent.putExtra("userDisplayName", userDisplayName);
+                    intent.putExtra("bookOwnerName", bookOwnerName);
                     startActivity(intent);
                 }
             });
+            showChatButton = true;
         }
     }
 

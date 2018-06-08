@@ -1,4 +1,4 @@
-package com.example.sergio.madlab;
+package com.example.sergio.madlab.Classes;
 
 public class ChatHistory {
 

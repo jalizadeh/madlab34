@@ -105,7 +105,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                 return;
             }
 
-            Toast.makeText(Login.this, "Wait please...\nlogging in progress", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Login.this, "Please wait...\nLogging in progress", Toast.LENGTH_SHORT).show();
             firebaseAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -128,7 +128,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                 } catch (FirebaseNetworkException e){
                                     Toast.makeText(Login.this, R.string.error_network, Toast.LENGTH_SHORT).show();
                                 } catch(Exception e) {
-                                    Toast.makeText(Login.this, R.string.error_login, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Login.this,"Please try again", Toast.LENGTH_SHORT).show();
                                 }
 
                         }

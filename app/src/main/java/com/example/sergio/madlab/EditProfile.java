@@ -2,11 +2,8 @@ package com.example.sergio.madlab;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -21,8 +18,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,6 +27,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.sergio.madlab.Classes.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,15 +37,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -96,6 +88,8 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
 
     //User class
     private User user;
+    private String userID;
+    private String userIDfromDB;
 
     //private ProgressDialog progressDialog;
 
@@ -113,15 +107,18 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
 
 
         database = FirebaseDatabase.getInstance().getReference();
-        storageRef = FirebaseStorage.getInstance().getReference();
         ref = database.child("users");
+
+        storageRef = FirebaseStorage.getInstance().getReference();
+
         authUser = FirebaseAuth.getInstance().getCurrentUser();
+        userID = authUser.getUid();
         userEmail = authUser.getEmail().replace(",", ".").replace(".", ",");
 
 
         //define Editetxts
         etName = (EditText) findViewById(R.id.editText_name);
-        etEmail = (EditText) findViewById(R.id.editText_mail);
+        //etEmail = (EditText) findViewById(R.id.editText_mail);
         etBio = (EditText) findViewById(R.id.editText_bio);
         etCity = (EditText) findViewById(R.id.editText_city);
 
@@ -204,7 +201,7 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
     //get the inserted data whenever needed
     public void getEditTextsValues(){
         name = etName.getText().toString();
-        email = etEmail.getText().toString();
+        //email = etEmail.getText().toString();
         bio = etBio.getText().toString();
         city = etCity.getText().toString();
     }
@@ -239,25 +236,20 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
 
     private void uploadProfileImage() {
         StorageReference fileRef = storageRef.child("images").child(userEmail).child("profile_image");
-        if (fileRef != null) {
-            fileRef.putFile(getUri(path, filename))
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Toast.makeText(EditProfile.this, "Uploaded successfully", Toast.LENGTH_SHORT).show();
-                            //saveDataToFirebase();
-                            finish();
+        fileRef.putFile(getUri(path, filename))
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        //Toast.makeText(EditProfile.this, "Uploaded successfully", Toast.LENGTH_SHORT).show();
+                        finish();
 
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    Toast.makeText(EditProfile.this, "Upload failed.", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            Toast.makeText(EditProfile.this, R.string.profile_not_exists, Toast.LENGTH_LONG).show();
-        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Toast.makeText(EditProfile.this, "Upload failed.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 
@@ -269,11 +261,13 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             etName.requestFocus();
             return false;
         }
+        /*
         if (email.isEmpty()){
             etEmail.setError(getString(R.string.error_invalid_email));
             etEmail.requestFocus();
             return false;
         }
+        */
         if (city.isEmpty()){
             etCity.setError(getString(R.string.error_invalid_city));
             etCity.requestFocus();
@@ -314,14 +308,16 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
 
 
     private void fetchUserProfile() {
-        ref.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
+
                 etName.setText(user.getName());
-                etEmail.setText(user.getEmail());
+                //etEmail.setText(user.getEmail());
                 etBio.setText(user.getBio());
                 etCity.setText(user.getCity());
+                userIDfromDB = user.getUserID();
             }
 
             @Override
@@ -331,57 +327,23 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         });
     }
 
-    /*
-    private void downloadToLocalFile(StorageReference fileRef) {
-        if (fileRef != null) {
-            try {
-                final File localFile = File.createTempFile("profileImage", "jpg");
 
-                fileRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                        profileImage.setImageBitmap(bmp);
-                        Toast.makeText(EditProfile.this, "Downloaded successfully", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Toast.makeText(EditProfile.this, "Image download failed.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            Toast.makeText(EditProfile.this, R.string.profile_not_exists, Toast.LENGTH_LONG).show();
-        }
-    }
-*/
     private void uploadUserData() {
         getEditTextsValues();
         if(validateInputs(name, email,city)){
             user.setName(name);
-            user.setEmail(email);
+            //user.setEmail(email);
             user.setBio(bio);
             user.setCity(city);
         }
 
-        ref.child(userEmail).setValue(user, new DatabaseReference.CompletionListener() {
+        ref.child(userID).setValue(user, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 finish();
             }
         });
     }
-
-
-
-
-
-
-
-
 
 
 

@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.sergio.madlab.ViewBook">
+
+    <item
+        android:id="@+id/action_start_chat"
+        android:orderInCategory="100"
+        android:title="info"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/sym_action_chat"/>
+</menu>
