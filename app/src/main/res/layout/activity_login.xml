@@ -17,7 +17,7 @@
             android:id="@+id/login_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:title="Log in"
+            app:title="@string/title_activity_login"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>

@@ -1,12 +1,12 @@
-package com.example.sergio.madlab;
+package com.example.sergio.madlab.Classes;
 
-public class Msg {
+public class Message {
 
     private String time;
     private String message;
     private String who; //0 = me, 1 = other user
 
-    public Msg(){}
+    public Message(){}
 
     public String getTime() {
         return time.toString();

@@ -1,8 +1,8 @@
-package com.example.sergio.madlab;
+package com.example.sergio.madlab.Classes;
 
 public class User {
 
-    private String userID;
+    private String  userID;
     private String  name;
     private String  email;
     private String  city;

@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.sergio.madlab.Classes.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -36,6 +37,9 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
+import com.example.sergio.madlab.Classes.*;
+
+
 
 public class SearchBook extends AppCompatActivity {
 
@@ -70,6 +74,7 @@ public class SearchBook extends AppCompatActivity {
 
 
     //
+    private String userID;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference database, userDB, booksDB;
@@ -89,9 +94,6 @@ public class SearchBook extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-
-
-        firebaseAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
         userDB = database.child("users");
 
@@ -100,9 +102,10 @@ public class SearchBook extends AppCompatActivity {
 
 
 
-
+        firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        userEmail = firebaseUser.getEmail().replace(",",",,").replace(".", ",");
+        userID = firebaseUser.getUid();
+        //userEmail = firebaseUser.getEmail().replace(",",",,").replace(".", ",");
 
 
         /*
@@ -191,17 +194,30 @@ public class SearchBook extends AppCompatActivity {
             mView = itemView;
         }
 
-        public void showView(){
-            mView.setVisibility(View.VISIBLE);
-        }
-
         public void hideView(){
+            mView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
             mView.setVisibility(View.GONE);
+
         }
 
         public void setTitle(String title){
             TextView nameTxt = (TextView)mView.findViewById(R.id.cvs_bookTitle);
             nameTxt.setText(title);
+        }
+
+        public void setPublisher(String publisher){
+            TextView nameTxt = (TextView)mView.findViewById(R.id.cvs_bookPublisher);
+            nameTxt.setText(publisher);
+        }
+
+        public void setAuthor(String author){
+            TextView nameTxt = (TextView)mView.findViewById(R.id.cvs_bookAuthor);
+            nameTxt.setText(author);
+        }
+
+        public void setGenre(String genre){
+            TextView nameTxt = (TextView)mView.findViewById(R.id.cvs_bookGenre);
+            nameTxt.setText(genre);
         }
 
         public void setImage(String keyISBN){
@@ -216,6 +232,7 @@ public class SearchBook extends AppCompatActivity {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                        bookThumb.setBackgroundDrawable(null);
                         bookThumb.setImageBitmap(bmp);
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -233,18 +250,6 @@ public class SearchBook extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
-        /*
-        public void setAtuthor(String author){
-            TextView propTxt= (TextView) mView.findViewById(R.id.propellantTxt);
-            propTxt.setText(author);
-        }
-
-        public void setGenre(String genre){
-            TextView descTxt= (TextView) mView.findViewById(R.id.descTxt);
-            descTxt.setText(genre);
-        }
-        */
     }
 
 
@@ -256,20 +261,12 @@ public class SearchBook extends AppCompatActivity {
         searchFactor = spSearchFactor.getSelectedItem().toString().toLowerCase();
         searchValue = etSearchValue.getText().toString();
 
-
         booksDB = database.child("books");
-
+        booksDB.keepSynced(true);
         //my temporary solution
         //because the project is small enough, i will fetch all the data from "books"
         //then, i will compare book.getTitle() with searchValue
         //if yes, i will show it, else won`t
-
-        /*
-        Query firebaseSearchQuery = booksDB.orderByChild(searchFactor)
-                .startAt(searchValue)
-                .endAt(searchValue + "\uf8ff");
-        */
-
 
 
         firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Book, BookViewHolder>(
@@ -285,112 +282,76 @@ public class SearchBook extends AppCompatActivity {
                 publisher = book.getPublisher();
 
                 switch (searchFactor) {
-                    case "title":
-                        if(title.toLowerCase().contains(searchValue.toLowerCase())){
-                            // viewHolder.showView();
-                            // viewHolder.itemView.setVisibility(View.VISIBLE);
+                    case "> title":
+                        if(title.toLowerCase().contains(searchValue.toLowerCase())
+                                && !book.getUser().contains(userID)){
                             isbn = book.getIsbn();
                             viewHolder.setTitle(title);
+                            viewHolder.setAuthor(book.getAuthor());
+                            viewHolder.setPublisher(book.getPublisher());
+                            viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
-                            //Toast.makeText(getApplicationContext(),searchFactor +" - "+ searchValue,Toast.LENGTH_LONG).show();
-                            //viewHolder.setAtuthor(book.getAuthor());
-                            //viewHolder.setGenre(book.getGenre());
+
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    //firebaseRecyclerAdapter.getRef(position).removeValue();
                                     String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
-                                    //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(getBaseContext(), ViewBook.class);
                                     intent.putExtra("keyISBN", keyISBN);
                                     startActivity(intent);
                                 }
                             });
                         } else {
-
-                            //ViewGroup.MarginLayoutParams pm = (ViewGroup.MarginLayoutParams) viewHolder.mView.getLayoutParams();
-                            //pm.setMargins(0, 0, 0, 0);
-                            //viewHolder.mView.requestLayout();
-
-                            ViewGroup.LayoutParams params = viewHolder.mView.getLayoutParams();
-                            params.height = 0;
-                            params.width = 0;
-                            viewHolder.mView.setLayoutParams(params);
-
-                            viewHolder.mView.setVisibility(View.GONE);
+                            viewHolder.hideView();
                         }
                         break;
 
-                    case "author":
-                        if(author.toLowerCase().contains(searchValue.toLowerCase())){
-                            // viewHolder.showView();
-                            // viewHolder.itemView.setVisibility(View.VISIBLE);
+                    case "> author":
+                        if(author.toLowerCase().contains(searchValue.toLowerCase())
+                                && !book.getUser().contains(userID)){
                             isbn = book.getIsbn();
                             viewHolder.setTitle(title);
+                            viewHolder.setAuthor(book.getAuthor());
+                            viewHolder.setPublisher(book.getPublisher());
+                            viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
-                            //Toast.makeText(getApplicationContext(),searchFactor +" - "+ searchValue,Toast.LENGTH_LONG).show();
-                            //viewHolder.setAtuthor(book.getAuthor());
-                            //viewHolder.setGenre(book.getGenre());
+
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    //firebaseRecyclerAdapter.getRef(position).removeValue();
                                     String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
-                                    //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(getBaseContext(), ViewBook.class);
                                     intent.putExtra("keyISBN", keyISBN);
                                     startActivity(intent);
                                 }
                             });
                         } else {
-
-                            //ViewGroup.MarginLayoutParams pm = (ViewGroup.MarginLayoutParams) viewHolder.mView.getLayoutParams();
-                            //pm.setMargins(0, 0, 0, 0);
-                            //viewHolder.mView.requestLayout();
-
-                            ViewGroup.LayoutParams params = viewHolder.mView.getLayoutParams();
-                            params.height = 0;
-                            params.width = 0;
-                            viewHolder.mView.setLayoutParams(params);
-
-                            viewHolder.mView.setVisibility(View.GONE);
+                            viewHolder.hideView();
                         }
                         break;
 
 
-                    case "publisher":
-                        if(publisher.toLowerCase().contains(searchValue.toLowerCase())){
-                            // viewHolder.showView();
-                            // viewHolder.itemView.setVisibility(View.VISIBLE);
+                    case "> publisher":
+                        if(publisher.toLowerCase().contains(searchValue.toLowerCase())
+                                && !book.getUser().contains(userID)){
                             isbn = book.getIsbn();
                             viewHolder.setTitle(title);
+                            viewHolder.setAuthor(book.getAuthor());
+                            viewHolder.setPublisher(book.getPublisher());
+                            viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
-                            //Toast.makeText(getApplicationContext(),searchFactor +" - "+ searchValue,Toast.LENGTH_LONG).show();
-                            //viewHolder.setAtuthor(book.getAuthor());
-                            //viewHolder.setGenre(book.getGenre());
+
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    //firebaseRecyclerAdapter.getRef(position).removeValue();
                                     String keyISBN = firebaseRecyclerAdapter.getRef(position).getKey();
-                                    //Toast.makeText(getApplicationContext(),keyISBN,Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(getBaseContext(), ViewBook.class);
                                     intent.putExtra("keyISBN", keyISBN);
                                     startActivity(intent);
                                 }
                             });
                         } else {
-
-                            //ViewGroup.MarginLayoutParams pm = (ViewGroup.MarginLayoutParams) viewHolder.mView.getLayoutParams();
-                            //pm.setMargins(0, 0, 0, 0);
-                            //viewHolder.mView.requestLayout();
-
-                            ViewGroup.LayoutParams params = viewHolder.mView.getLayoutParams();
-                            params.height = 0;
-                            params.width = 0;
-                            viewHolder.mView.setLayoutParams(params);
-
-                            viewHolder.mView.setVisibility(View.GONE);
+                            viewHolder.hideView();
                         }
                         break;
                 }

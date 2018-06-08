@@ -11,6 +11,9 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            multiDexEnabled true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -38,7 +41,7 @@ dependencies {
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.google.apis:google-api-services-books:v1-rev95-1.23.0'
     implementation 'com.firebase:geofire-android:2.3.1'
-
+    implementation 'de.hdodenhof:circleimageview:2.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

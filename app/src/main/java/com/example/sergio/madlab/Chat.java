@@ -22,6 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import com.example.sergio.madlab.Classes.*;
 
 /*
 
@@ -40,7 +41,7 @@ public class Chat extends AppCompatActivity {
     private EditText messageArea;
 
     private RecyclerView mChatList;
-    private FirebaseRecyclerAdapter<Msg, ChatViewHolder> firebaseRecyclerAdapter;
+    private FirebaseRecyclerAdapter<Message, ChatViewHolder> firebaseRecyclerAdapter;
 
     //
     private String currentUserId, bookOwnerId;
@@ -89,7 +90,7 @@ public class Chat extends AppCompatActivity {
                 if (!messageText.equals("")) {
                     final Date date = new Date();
 
-                    Msg msg = new Msg();
+                    Message msg = new Message();
                     msg.setTime(formatter.format(date));
                     msg.setMessage(userDisplayName + ":\n"+messageText);
                     msg.setWho("0");
@@ -114,10 +115,10 @@ public class Chat extends AppCompatActivity {
 
 
     private void getAllChats() {
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Msg, ChatViewHolder>
-                (Msg.class, R.layout.cardview_chat, ChatViewHolder.class, userChats) {
+        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Message, ChatViewHolder>
+                (Message.class, R.layout.cardview_chat, ChatViewHolder.class, userChats) {
             @Override
-            protected void populateViewHolder(ChatViewHolder viewHolder, Msg msg, final int position) {
+            protected void populateViewHolder(ChatViewHolder viewHolder, Message msg, final int position) {
                 String message =msg.getMessage().toString();
                 String time = msg.getTime().toString();
                 String who = msg.getWho().toString();
@@ -172,12 +173,11 @@ public class Chat extends AppCompatActivity {
             }
         });
 
-        userChats.keepSynced(true);
-
         mChatList = (RecyclerView) findViewById(R.id.chatRecycleView);
         mChatList.hasFixedSize();
         mChatList.setLayoutManager(new LinearLayoutManager(this));
     }
+
 
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
