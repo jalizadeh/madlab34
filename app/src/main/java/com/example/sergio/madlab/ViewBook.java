@@ -22,6 +22,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sergio.madlab.Classes.User;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,11 +44,12 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Target;
 
 import com.example.sergio.madlab.Classes.*;
 
 
-public class ViewBook extends AppCompatActivity {
+public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
 
     //for startchat btn in menu
     private Menu menu;
@@ -98,6 +105,8 @@ public class ViewBook extends AppCompatActivity {
     Uri uri;
     File filename;
     private String path;
+
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,6 +178,10 @@ public class ViewBook extends AppCompatActivity {
                 }
             }
         });
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
     }
 
@@ -336,4 +349,25 @@ public class ViewBook extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        database.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                DataSnapshot book = dataSnapshot.child("locations").child(keyISBN);
+                double latitude = (double) book.child("l").child("0").getValue();
+                double longitude = (double) book.child("l").child("1").getValue();
+                LatLng location = new LatLng(latitude, longitude);
+                mMap.addMarker(new MarkerOptions().position(location).title(title));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 12.0f));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
 }
