@@ -1,13 +1,16 @@
 package com.example.sergio.madlab;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -15,7 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
 
@@ -42,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        googleMap.setOnMarkerClickListener(this);
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         putBookLocations(ref);
@@ -68,14 +72,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void addMarker(final LatLng location, String key) {
+    private void addMarker(final LatLng location, final String key) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         DatabaseReference titleRef = ref.child("books").child(key).child("title");
         titleRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String title = dataSnapshot.getValue(String.class);
-                mMap.addMarker(new MarkerOptions().position(location).title(title));
+                mMap.addMarker(new MarkerOptions().position(location).title(title)).setSnippet(key);
             }
 
             @Override
@@ -85,4 +89,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Toast.makeText(getApplicationContext(),"hola", Toast.LENGTH_LONG).show();
+
+        Intent intent = new Intent(getBaseContext(), ViewBook.class);
+        intent.putExtra("keyISBN", marker.getSnippet());
+        //TODO arreglar el usuario a mostrar
+        //intent.putExtra("userDisplayName", tvNHName.getText().toString());
+
+        startActivity(intent);
+        return false;
+    }
 }
