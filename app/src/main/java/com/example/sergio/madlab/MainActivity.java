@@ -215,6 +215,9 @@ public class MainActivity extends AppCompatActivity
             finish();
             Intent intent = new Intent(this, Login.class);
             startActivity(intent);
+        }else if (id == R.id.nav_requests) {
+            Intent intent = new Intent(this, AllRequests.class);
+            startActivity(intent);
         } else if(id == R.id.nav_about){
             Intent intent = new Intent(this, AboutUs.class);
             startActivity(intent);

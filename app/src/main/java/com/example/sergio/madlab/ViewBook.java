@@ -1,6 +1,21 @@
 package com.example.sergio.madlab;
 
+
+
+import android.app.PendingIntent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.app.NotificationManager;
+import android.support.v4.app.NotificationCompat;
+import android.view.View;
+import android.content.Context;
+
+
+import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +26,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -91,6 +107,8 @@ public class ViewBook extends AppCompatActivity {
     private FirebaseUser authUser;
     private StorageReference storageRef;
     private DatabaseReference database;
+    private DatabaseReference notifications;
+    private DatabaseReference requests;
     private DatabaseReference booksDB;
     private DatabaseReference userDB;
 
@@ -98,6 +116,8 @@ public class ViewBook extends AppCompatActivity {
     Uri uri;
     File filename;
     private String path;
+    private Notification notif;
+    private BookRequest bookRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,10 +135,16 @@ public class ViewBook extends AppCompatActivity {
         userDisplayName = getIntent().getStringExtra("userDisplayName");
 
 
+        notif = new Notification();
+        bookRequest = new BookRequest();
+
+
         //Firebase
         database = FirebaseDatabase.getInstance().getReference();
         userDB = database.child("users");
         booksDB = database.child("books");
+        notifications = database.child("notifications");
+        requests = database.child("requests");
 
 
 
@@ -170,6 +196,29 @@ public class ViewBook extends AppCompatActivity {
             }
         });
 
+
+
+        // Create an explicit intent for an Activity in your app
+        Intent intent = new Intent(this, AllRequests.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.bubble_in)
+                .setContentTitle("New things happened!")
+                .setContentText("Tap to see")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+
+        // Gets an instance of the NotificationManager service//
+        NotificationManager mNotificationManager  =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        //NotificationManager.notify().
+        mNotificationManager.notify(001, mBuilder.build());
     }
 
 
@@ -228,16 +277,59 @@ public class ViewBook extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_chat) {
             if(showChatButton){
-                Intent intent = new Intent(ViewBook.this, Chat.class);
-                intent.putExtra("chatWith", bookOwnerId);
-                intent.putExtra("userDisplayName", userDisplayName);
-                intent.putExtra("bookOwnerName", bookOwnerName);
-                startActivity(intent);
+                requestTheBook();
                 return true;
             }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void requestTheBook() {
+        // first ask user if he is sure to request the book
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.request_book)
+                .setMessage(R.string.request_msg)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                                /*
+                                Intent intent = new Intent(ViewBook.this, Chat.class);
+                                intent.putExtra("chatWith", bookOwnerId);
+                                intent.putExtra("userDisplayName", userDisplayName);
+                                intent.putExtra("bookOwnerName", bookOwnerName);
+                                */
+
+                        //set a notification
+                        notif.setUserID(bookOwnerId);
+                        notif.setIsRead("0");
+                        notif.setType("book_request");
+                        notifications.child(bookOwnerId).push().setValue(notif);
+
+
+                        bookRequest.setRequesterID(userID);
+                        bookRequest.setBookOwnerID(bookOwnerId);
+                        bookRequest.setBookISBN(isbn);
+                        bookRequest.setBookName(title);
+                        bookRequest.setStatus("pending");
+                        requests.child(userID).child(isbn).setValue(bookRequest);
+                        requests.child(bookOwnerId).child(isbn).setValue(bookRequest);
+                                /*
+                                Intent intent = new Intent(ViewBook.this, AllRequests.class);
+                                intent.putExtra("bookOwnerId", bookOwnerId);
+                                intent.putExtra("bookOwnerName", bookOwnerName);
+                                intent.putExtra("userDisplayName", userDisplayName);
+                                intent.putExtra("bookISBN", isbn);
+                                intent.putExtra("bookTitle", title);
+                                startActivity(intent);
+                                */
+
+                        Intent intent = new Intent(ViewBook.this, AllRequests.class);
+                        startActivity(intent);
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+
     }
 
 
@@ -271,6 +363,10 @@ public class ViewBook extends AppCompatActivity {
 
     //Set all the texts
     private void setTexts() {
+        //i will use these global variables again
+        isbn = book.getIsbn();
+        title = book.getTitle();
+
         tISBN.setText("ISBN: " + book.getIsbn());
         tTitle.setText(book.getTitle());
         tAuthor.setText(book.getAuthor());
@@ -325,11 +421,7 @@ public class ViewBook extends AppCompatActivity {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(ViewBook.this, Chat.class);
-                    intent.putExtra("chatWith", bookOwnerId);
-                    intent.putExtra("userDisplayName", userDisplayName);
-                    intent.putExtra("bookOwnerName", bookOwnerName);
-                    startActivity(intent);
+                    requestTheBook();
                 }
             });
             showChatButton = true;

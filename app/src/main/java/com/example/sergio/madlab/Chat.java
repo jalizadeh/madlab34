@@ -68,7 +68,7 @@ public class Chat extends AppCompatActivity {
         currentUserId = firebaseUser.getUid();
 
         //get the book Owner ID from viewBook / AllChats
-        bookOwnerId = getIntent().getStringExtra("chatWith");
+        bookOwnerId = getIntent().getStringExtra("bookOwnerId");
         //comes from viewBook
         userDisplayName = getIntent().getStringExtra("userDisplayName");
         //bookOwnerName comes from AllChats
