@@ -51,6 +51,8 @@ import java.io.IOException;
 
 public class AllRequests extends AppCompatActivity {
 
+    private int currentCount;
+
     //retrieved data from database
     private String dbName="";
     private String dbEmail="";
@@ -258,12 +260,24 @@ public class AllRequests extends AppCompatActivity {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
 
-                        //set a notification
-                        //and send to the requester
-                        notif.setUserID(bookRequesterID);
-                        notif.setIsRead("0");
-                        notif.setType("book_request");
-                        notificationsDB.child(bookRequesterID).push().setValue(notif);
+                        //1. get the current value
+                        //2. update it +1
+                        notificationsDB.child(bookRequesterID).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    currentCount = 0;
+                                    currentCount = dataSnapshot.getValue(Integer.class);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        notificationsDB.child(bookRequesterID).child("book_request").setValue(currentCount + 1);
 
                         requestsDB.child(bookRequestObject.getBookISBN()).setValue(bookRequestObject);
                         database.child("requests").child(bookRequesterID).child(bookRequestObject.getBookISBN()).setValue(bookRequestObject);
@@ -272,12 +286,24 @@ public class AllRequests extends AppCompatActivity {
                 .setNegativeButton("Reject", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        //set a notification
-                        //and send to the requester
-                        notif.setUserID(bookRequesterID);
-                        notif.setIsRead("0");
-                        notif.setType("book_request");
-                        notificationsDB.child(bookRequesterID).push().setValue(notif);
+                        //1. get the current value
+                        //2. update it +1
+                        notificationsDB.child(bookRequesterID).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    currentCount = 0;
+                                    currentCount = dataSnapshot.getValue(Integer.class);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        notificationsDB.child(bookRequesterID).child("book_request").setValue(currentCount + 1);
 
                         bookRequestObject.setStatus("reject");
                         requestsDB.child(bookRequestObject.getBookISBN()).setValue(bookRequestObject);

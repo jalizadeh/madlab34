@@ -1,6 +1,9 @@
 package com.example.sergio.madlab;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -8,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -82,7 +86,7 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private String userID;
-    private DatabaseReference database, userDB, booksDB;
+    private DatabaseReference database, userDB, booksDB, notifDB;
     //private StorageReference storageRef;
 
     FirebaseRecyclerAdapter<Book, BookViewHolder> firebaseRecyclerAdapter;
@@ -138,6 +142,9 @@ public class MainActivity extends AppCompatActivity
         userID = firebaseAuth.getUid();
         database = FirebaseDatabase.getInstance().getReference();
         userDB = database.child("users");
+        notifDB = database.child("notifications");
+        notifDB.keepSynced(true);
+
 
         //if the user token is not in the local storage
         if(firebaseAuth.getCurrentUser() == null) {
@@ -155,8 +162,78 @@ public class MainActivity extends AppCompatActivity
         showAllBooks();
         getUserProfile();
 
+        //after everything fetched, notifications will be checked
+        getNotifications();
     }
 
+    private void getNotifications() {
+        notifDB.child(userID).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    int requestCount = dataSnapshot.getValue(Integer.class);
+                    if (requestCount > 0){
+                        // Create an explicit intent for an Activity in your app
+                        Intent intent = new Intent(MainActivity.this, AllRequests.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+
+                        NotificationCompat.Builder mBuilder =
+                                new NotificationCompat.Builder(MainActivity.this)
+                                        .setSmallIcon(R.drawable.bubble_in)
+                                        .setContentTitle("You have " + requestCount + " new requests.")
+                                        .setContentText("Tap to see")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setContentIntent(pendingIntent)
+                                        .setAutoCancel(true);
+
+                        notifDB.child(userID).child("book_request").setValue(0);
+                        // Gets an instance of the NotificationManager service//
+                        NotificationManager mNotificationManager  =
+                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        mNotificationManager.notify(001, mBuilder.build());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+        notifDB.child(userID).child("message").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    int msgCount = dataSnapshot.getValue(Integer.class);
+                    if (msgCount > 0){
+                        Intent intent = new Intent(MainActivity.this, AllChats.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+
+                        NotificationCompat.Builder mBuilder =
+                                new NotificationCompat.Builder(MainActivity.this)
+                                        .setSmallIcon(R.drawable.bubble_in)
+                                        .setContentTitle("You have " + msgCount + " new messages.")
+                                        .setContentText("Tap to see")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setContentIntent(pendingIntent)
+                                        .setAutoCancel(true);
+
+                        notifDB.child(userID).child("message").setValue(0);
+                        NotificationManager mNotificationManager  =
+                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        mNotificationManager.notify(001, mBuilder.build());
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
 
 
     private void getUserProfile(){

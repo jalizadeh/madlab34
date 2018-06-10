@@ -60,6 +60,9 @@ import com.example.sergio.madlab.Classes.*;
 
 public class ViewBook extends AppCompatActivity {
 
+
+    private int currentCount;
+
     //for startchat btn in menu
     private Menu menu;
     private FloatingActionButton fab;
@@ -195,30 +198,6 @@ public class ViewBook extends AppCompatActivity {
                 }
             }
         });
-
-
-
-        // Create an explicit intent for an Activity in your app
-        Intent intent = new Intent(this, AllRequests.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.bubble_in)
-                .setContentTitle("New things happened!")
-                .setContentText("Tap to see")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-
-        // Gets an instance of the NotificationManager service//
-        NotificationManager mNotificationManager  =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        //NotificationManager.notify().
-        mNotificationManager.notify(001, mBuilder.build());
     }
 
 
@@ -301,11 +280,24 @@ public class ViewBook extends AppCompatActivity {
                                 intent.putExtra("bookOwnerName", bookOwnerName);
                                 */
 
-                        //set a notification
-                        notif.setUserID(bookOwnerId);
-                        notif.setIsRead("0");
-                        notif.setType("book_request");
-                        notifications.child(bookOwnerId).push().setValue(notif);
+                        //1. get the current value
+                        //2. update it +1
+                        notifications.child(bookOwnerId).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    currentCount = 0;
+                                    currentCount = dataSnapshot.getValue(Integer.class);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        notifications.child(bookOwnerId).child("book_request").setValue(currentCount + 1);
 
 
                         bookRequest.setRequesterID(userID);
