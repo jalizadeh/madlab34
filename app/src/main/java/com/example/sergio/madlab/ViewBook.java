@@ -356,12 +356,14 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
         database.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                DataSnapshot book = dataSnapshot.child("locations").child(keyISBN);
-                double latitude = (double) book.child("l").child("0").getValue();
-                double longitude = (double) book.child("l").child("1").getValue();
-                LatLng location = new LatLng(latitude, longitude);
-                mMap.addMarker(new MarkerOptions().position(location).title(title));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 12.0f));
+                if (dataSnapshot.child("locations").hasChild(keyISBN)) {
+                    DataSnapshot book = dataSnapshot.child("locations").child(keyISBN);
+                    double latitude = (double) book.child("l").child("0").getValue();
+                    double longitude = (double) book.child("l").child("1").getValue();
+                    LatLng location = new LatLng(latitude, longitude);
+                    mMap.addMarker(new MarkerOptions().position(location).title(title));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 12.0f));
+                }
             }
 
             @Override

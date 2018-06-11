@@ -45,6 +45,13 @@ import java.util.Random;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -87,6 +94,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     private final int OPEN_GALLERY = 1;
     private final int OPEN_CAMERA = 2;
     private final int OPEN_BARCODE_READER = 3;
+    private final int PLACE_PICKER_REQUEST = 4;
     private final String GOOGLE_ISBN_LINK = "https://www.googleapis.com/books/v1/volumes?q=isbn:";
 //https://www.googleapis.com/books/v1/volumes?q=isbn:9780136123569
 
@@ -136,6 +144,8 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     Uri uri;
     File filename;
     private String path;
+
+    private LatLng chosenLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -353,6 +363,15 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             bitmap = (Bitmap) data.getExtras().get("data");
             bookImage.setImageBitmap(bitmap);
 
+        } else if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(data, this);
+                chosenLocation = place.getLatLng();
+                Toast.makeText(InsertBook.this, "Location chosen successfully", Toast.LENGTH_SHORT).show();
+                TextView locationText = findViewById(R.id.textView_location);
+                locationText.setText(place.getAddress());
+            }
+
         } else {
             Toast.makeText(getApplicationContext(), "Invalid barcode!", Toast.LENGTH_SHORT).show();
         }
@@ -496,7 +515,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
         GeoFire geoFire = new GeoFire(ref);
         //TODO do this with current location or location chosen by user
-        geoFire.setLocation(isbn, new GeoLocation(45.029739 + 0.084518 * new Random().nextDouble(), 7.615670 + 0.092441 * new Random().nextDouble()), new GeoFire.CompletionListener() {
+        geoFire.setLocation(isbn, new GeoLocation(chosenLocation.latitude, chosenLocation.longitude), new GeoFire.CompletionListener() {
             @Override
             public void onComplete(String key, DatabaseError error) {
                 if (error != null) {
@@ -507,5 +526,17 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             }
         });
 
+    }
+
+    public void chooseLocation(View view) {
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+        try {
+            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException e) {
+            e.printStackTrace();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
     }
 }

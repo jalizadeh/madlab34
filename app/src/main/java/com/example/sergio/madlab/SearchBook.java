@@ -369,5 +369,11 @@ public class SearchBook extends AppCompatActivity {
             imm.hideSoftInputFromWindow(this.getCurrentFocus().getApplicationWindowToken(), 0);
     }
 
-}
+    public void showInMap(View view) {
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("searchFactor", searchFactor);
+        intent.putExtra("searchValue", searchValue);
+        startActivity(intent);
+    }
 
+}

@@ -42,6 +42,7 @@ dependencies {
     implementation 'com.google.apis:google-api-services-books:v1-rev95-1.23.0'
     implementation 'com.firebase:geofire-android:2.3.1'
     implementation 'de.hdodenhof:circleimageview:2.1.0'
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'
