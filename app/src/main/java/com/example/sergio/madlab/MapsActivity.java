@@ -6,11 +6,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
@@ -19,9 +21,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private HashMap<String, MarkerOptions> markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,18 +39,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        Intent intent = getIntent();
+        markers = (HashMap<String, MarkerOptions>) intent.getSerializableExtra("markers");
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -57,57 +58,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-        putBookLocations(ref);
-    }
+        Iterator it = markers.entrySet().iterator();
+        //LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-    private void putBookLocations(DatabaseReference database) {
-        database.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                DataSnapshot locationsSnapshot = dataSnapshot.child("locations");
-                Iterable<DataSnapshot> bookChildren = locationsSnapshot.getChildren();
-                for (DataSnapshot book : bookChildren) {
-                    double latitude = (double) book.child("l").child("0").getValue();
-                    double longitude = (double) book.child("l").child("1").getValue();
-                    LatLng location = new LatLng(latitude, longitude);
-                    addMarker(location, book.getKey());
-                }
-            }
+        while (it.hasNext()) {
+            Map.Entry e = (Map.Entry)it.next();
+            mMap.addMarker((MarkerOptions) e.getValue()).setSnippet((String) e.getKey());
+            //builder.include(((MarkerOptions) e.getValue()).getPosition());
+        }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void addMarker(final LatLng location, final String key) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference titleRef = ref.child("books").child(key).child("title");
-        titleRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String title = dataSnapshot.getValue(String.class);
-                mMap.addMarker(
-                        new MarkerOptions()
-                            .position(location)
-                            .title(title))
-                            .setSnippet(key);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void doSearch() {
-        Intent intent = getIntent();
-        String searchFactor = intent.getStringExtra("searchFactor");
-        String searchValue = intent.getStringExtra("searchValue");
-        //TODO
+        /*LatLngBounds bounds = builder.build();
+        int padding = 0; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        googleMap.animateCamera(cu);*/
 
     }
 

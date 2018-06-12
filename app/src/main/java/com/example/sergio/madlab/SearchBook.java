@@ -15,23 +15,28 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.sergio.madlab.Classes.Book;
 import com.example.sergio.madlab.Classes.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.common.collect.Maps;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -39,9 +44,10 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-
-import com.example.sergio.madlab.Classes.*;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 
@@ -90,6 +96,8 @@ public class SearchBook extends AppCompatActivity {
 
     FirebaseRecyclerAdapter<Book, BookViewHolder> firebaseRecyclerAdapter;
 
+    private HashMap<String, MarkerOptions> markers = new HashMap<String, MarkerOptions>();
+    private LatLng currentMarkerLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +115,7 @@ public class SearchBook extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(SearchBook.this, MapsActivity.class);
+                intent.putExtra("markers", markers);
                 startActivity(intent);
             }
         });
@@ -311,6 +320,9 @@ public class SearchBook extends AppCompatActivity {
                             viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
 
+                            getBookPosition(isbn, title);
+
+
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -334,6 +346,8 @@ public class SearchBook extends AppCompatActivity {
                             viewHolder.setPublisher(book.getPublisher());
                             viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
+
+                            getBookPosition(isbn, title);
 
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -360,6 +374,8 @@ public class SearchBook extends AppCompatActivity {
                             viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
 
+                            getBookPosition(isbn, title);
+
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -381,18 +397,33 @@ public class SearchBook extends AppCompatActivity {
         sBookList.setAdapter(firebaseRecyclerAdapter);
     }
 
+    private void getBookPosition(final String bookId, final String title) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations/" + bookId);
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("locations").hasChild(bookId)) {
+                    double latitude = (double) dataSnapshot.child("l").child("0").getValue();
+                    double longitude = (double) dataSnapshot.child("l").child("1").getValue();
+                    Toast.makeText(SearchBook.this, latitude + " " + longitude, Toast.LENGTH_SHORT).show();
+                    currentMarkerLocation = new LatLng(latitude, longitude);
+                    markers.put(isbn, new MarkerOptions().position(currentMarkerLocation).title(title));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
 
     public void closeKeyboard() {
         InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (null != this.getCurrentFocus())
             imm.hideSoftInputFromWindow(this.getCurrentFocus().getApplicationWindowToken(), 0);
-    }
-
-    public void showInMap(View view) {
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("searchFactor", searchFactor);
-        intent.putExtra("searchValue", searchValue);
-        startActivity(intent);
     }
 
 }
