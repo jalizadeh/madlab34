@@ -1,7 +1,9 @@
 package com.example.sergio.madlab;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
@@ -9,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -274,8 +278,13 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             startActivityForResult(galleryIntent, OPEN_GALLERY);
         }
         if (v == openCamera) {
-            Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(photoIntent, OPEN_CAMERA);
+            //Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, OPEN_CAMERA);
+                }
+            }
+            //startActivityForResult(photoIntent, OPEN_CAMERA);
         }
         if (v == openBarcode){
             IntentIntegrator scanIntegrator = new IntentIntegrator(this);
@@ -290,6 +299,23 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                 Toast.makeText(getApplicationContext(), "Trying to get book`s data...", Toast.LENGTH_LONG).show();
                 FindBookApiTask task = new FindBookApiTask();
                 task.execute(GOOGLE_ISBN_LINK + etISBN.getText().toString());
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case OPEN_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(photoIntent, OPEN_CAMERA);
+
+                } else {
+                    Toast.makeText(InsertBook.this, "No camera permissions granted!", Toast.LENGTH_SHORT).show();
+                }
+                return;
             }
         }
     }
@@ -470,7 +496,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
         GeoFire geoFire = new GeoFire(ref);
         //TODO do this with current location or location chosen by user
-        geoFire.setLocation(isbn, new GeoLocation(-90 + 180 * new Random().nextDouble(), -180 + 360 * new Random().nextDouble()), new GeoFire.CompletionListener() {
+        geoFire.setLocation(isbn, new GeoLocation(45.029739 + 0.084518 * new Random().nextDouble(), 7.615670 + 0.092441 * new Random().nextDouble()), new GeoFire.CompletionListener() {
             @Override
             public void onComplete(String key, DatabaseError error) {
                 if (error != null) {

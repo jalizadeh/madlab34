@@ -13,7 +13,6 @@
     <string name="title_activity_all_requests">Manage Requests</string>
 
 
-
     <!-- Log in VIEW -->
     <string name="title_activity_login">Log in</string>
     <string name="hint_name">Name</string>
@@ -96,6 +95,13 @@
     <string name="menu_sign_out">Sign out</string>
     <string name="menu_requests">Requests</string>
 
+    <string name="menu_viewBook">View Book</string>
+    <string name="menu_chatWithOwner">Chat with owner</string>
+    <string name="menu_return_book">Return Book</string>
+    <string name="menu_review_book">Review Book</string>
+
+
+
     <!-- Alerts-->
     <string name="success">Success</string>
     <string name="register_success">Registered successfully</string>
@@ -108,9 +114,6 @@
     <!--request book -->
     <string name="request_book">Request Book</string>
     <string name="request_msg">Do you want to request the book?</string>
-
-
-
 
 
     <!--errors-->
@@ -133,5 +136,6 @@
         "Sergio Aula (s...)\n"
         "Mohammad Vesaghati (s...)\n"
     </string>
+    <string name="title_activity_maps2">Map</string>
 
 </resources>

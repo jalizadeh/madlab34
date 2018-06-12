@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +27,7 @@ import com.example.sergio.madlab.Classes.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.common.collect.Maps;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +39,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+
 import com.example.sergio.madlab.Classes.*;
 
 
@@ -72,6 +76,9 @@ public class SearchBook extends AppCompatActivity {
     private String userEmail;
     private User user;
 
+    FloatingActionButton fab;
+
+
 
     //
     private String userID;
@@ -92,6 +99,17 @@ public class SearchBook extends AppCompatActivity {
         //Set toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_searchBook);
         setSupportActionBar(toolbar);
+
+
+        //set floating button
+        fab = (FloatingActionButton) findViewById(R.id.showMap);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(SearchBook.this, MapsActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
         database = FirebaseDatabase.getInstance().getReference();
@@ -118,7 +136,7 @@ public class SearchBook extends AppCompatActivity {
         //setViews();
         spSearchFactor = (Spinner) findViewById(R.id.sp_searchFactor);
         etSearchValue = (EditText) findViewById(R.id.searchBar);
-        //btnDoSearch = (Button) findViewById(R.id.btnSearchBook);
+        //btnDoSearch = (Button) findViewById(R.id.button);
 
 
         //make recView ready
@@ -166,8 +184,9 @@ public class SearchBook extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if(validateValues())
+        if(validateValues()) {
             doSearch();
+        }
 
 
         return super.onOptionsItemSelected(item);

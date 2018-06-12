@@ -134,7 +134,8 @@
             android:id="@+id/cvs_bookImage"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:background="@mipmap/no_image"/>
+            android:background="@mipmap/no_image"
+            android:layout_marginTop="5dp"/>
     </LinearLayout>
 
 </LinearLayout>

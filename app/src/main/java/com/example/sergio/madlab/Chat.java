@@ -1,5 +1,6 @@
 package com.example.sergio.madlab;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,18 +25,9 @@ import java.util.Date;
 import java.util.List;
 import com.example.sergio.madlab.Classes.*;
 
-/*
-
-    BACKUPed
-    BACKUPed
-    BACKUPed
-    BACKUPed
-    BACKUPed
-    BACKUPed
-
-
- */
 public class Chat extends AppCompatActivity {
+
+    private User user;
 
     private ImageView sendButton;
     private EditText messageArea;
@@ -45,9 +37,9 @@ public class Chat extends AppCompatActivity {
 
     //
     private String currentUserId, bookOwnerId;
-    private String userDisplayName, bookOwnerName;
+    private String userDisplayName,requesterDisplayName, bookOwnerName,bookRequesterID;
     private FirebaseUser firebaseUser;
-    private DatabaseReference userChats, dbChats, dbChatHistory;
+    private DatabaseReference userChats, dbChats, dbChatHistory, database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +51,9 @@ public class Chat extends AppCompatActivity {
 
 
         //only need this part of the database
-        dbChats = FirebaseDatabase.getInstance().getReference().child("chats");
-        dbChatHistory = FirebaseDatabase.getInstance().getReference().child("chat_history");
+        database = FirebaseDatabase.getInstance().getReference();
+        dbChats = database.child("chats");
+        dbChatHistory = database.child("chat_history");
 
 
         //manage users - currentUser & bookOwnerId
@@ -69,16 +62,22 @@ public class Chat extends AppCompatActivity {
 
         //get the book Owner ID from viewBook / AllChats
         bookOwnerId = getIntent().getStringExtra("bookOwnerId");
-        //comes from viewBook
-        userDisplayName = getIntent().getStringExtra("userDisplayName");
         //bookOwnerName comes from AllChats
-        bookOwnerName = getIntent().getStringExtra("bookOwnerName");
+        //bookOwnerName = getIntent().getStringExtra("bookOwnerName");
+        bookRequesterID = getIntent().getStringExtra("bookRequesterID");
 
 
         //Set toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_chat);
         setSupportActionBar(toolbar);
-        toolbar.setTitle("Chatting: " + bookOwnerName);
+        //toolbar.setTitle("Chatting: " + requesterDisplayName);
+        toolbar.setTitle("Chatting");
+
+
+
+        showAllChats();
+        getUserProfile();
+        getRequesterProfile();
 
 
         final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -93,7 +92,11 @@ public class Chat extends AppCompatActivity {
                     Message msg = new Message();
                     msg.setTime(formatter.format(date));
                     msg.setMessage(userDisplayName + ":\n"+messageText);
-                    msg.setWho("0");
+                    if (currentUserId.contains(bookOwnerId)){
+                        msg.setWho("1");
+                    } else {
+                        msg.setWho("0");
+                    }
 
                     userChats.push().setValue(msg);
 
@@ -101,16 +104,48 @@ public class Chat extends AppCompatActivity {
                     ChatHistory ch = new ChatHistory();
                     ch.setChatWith(bookOwnerId);
                     ch.setLastMessage(formatter.format(date));
-                    dbChatHistory.child(currentUserId).child(bookOwnerId).setValue(ch);
+                    dbChatHistory.child(bookRequesterID).child(bookOwnerId).setValue(ch);
+
+
+                    //ch = new ChatHistory();
+                    ch.setChatWith(bookRequesterID);
+                    ch.setLastMessage(formatter.format(date));
+                    dbChatHistory.child(bookOwnerId).child(bookRequesterID).setValue(ch);
+
 
                     messageArea.setText("");
                 }
             }
         });
 
+    }
 
 
-        showAllChats();
+
+    private void getUserProfile(){
+        database.child("users").child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user = dataSnapshot.getValue(User.class);
+                userDisplayName = user.getName();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void getRequesterProfile(){
+        database.child("users").child(bookRequesterID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user = dataSnapshot.getValue(User.class);
+                requesterDisplayName = user.getName();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
 
@@ -123,12 +158,12 @@ public class Chat extends AppCompatActivity {
                 String time = msg.getTime().toString();
                 String who = msg.getWho().toString();
 
-                if(who.equals("0"))
-                    //viewHolder.setMessage("You: " + message);
-                    //the name is appended in the message itself
+                if(who.equals("1")){
+                    viewHolder.setOwner();
                     viewHolder.setMessage(message);
-                else
+                }else {
                     viewHolder.setMessage(message);
+                }
 
                 viewHolder.setTime(time);
             }
@@ -154,7 +189,7 @@ public class Chat extends AppCompatActivity {
          */
 
         //(B)
-        userChats = dbChats.child(bookOwnerId).child(currentUserId);
+        userChats = dbChats.child(bookOwnerId).child(bookRequesterID);
         userChats.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -164,7 +199,7 @@ public class Chat extends AppCompatActivity {
                     getAllChats();
                 } else {
                     //there isnt any chat, so lets start
-                    userChats = dbChats.child(currentUserId).child(bookOwnerId);
+                    userChats = dbChats.child(bookRequesterID).child(bookOwnerId);
                     getAllChats();
                 }
             }
@@ -187,6 +222,11 @@ public class Chat extends AppCompatActivity {
             super(itemView);
             mView = itemView;
 
+        }
+
+
+        public void setOwner(){
+            mView.findViewById(R.id.chat_cardview).setBackgroundColor(Color.GRAY);
         }
 
         public void setMessage(String title) {

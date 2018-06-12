@@ -17,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -29,6 +30,7 @@ import android.widget.Toast;
 import com.example.sergio.madlab.Classes.Book;
 import com.example.sergio.madlab.Classes.BookRequest;
 import com.example.sergio.madlab.Classes.Notification;
+import com.example.sergio.madlab.Classes.Review;
 import com.example.sergio.madlab.Classes.User;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -44,15 +46,19 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.stepstone.apprating.AppRatingDialog;
+import com.stepstone.apprating.listener.RatingDialogListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 
-public class AllRequests extends AppCompatActivity {
+public class AllRequests extends AppCompatActivity implements RatingDialogListener {
 
     private int currentCount;
 
+    private String userDisplayName;
     //retrieved data from database
     private String dbName="";
     private String dbEmail="";
@@ -61,6 +67,8 @@ public class AllRequests extends AppCompatActivity {
     //nav header
     private TextView tvNHName;
     private TextView tvNHMail;
+
+    private String reviewISBN;
 
     private String isbn="";
     private String title="";
@@ -73,6 +81,8 @@ public class AllRequests extends AppCompatActivity {
 
 
     private ProgressDialog progressDialog;
+
+    private Review review;
 
     //
     ImageView bookThumbnail;
@@ -110,7 +120,6 @@ public class AllRequests extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_allRequests);
         setSupportActionBar(toolbar);
 
-
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         firebaseAuth = FirebaseAuth.getInstance();
         userID = firebaseAuth.getUid();
@@ -122,9 +131,10 @@ public class AllRequests extends AppCompatActivity {
 
         bookRequestObject = new BookRequest();
         notif = new Notification();
+        review = new Review();
 
         showAllRequests();
-        //getUserProfile();
+        getUserProfile();
 
 
 
@@ -138,13 +148,7 @@ public class AllRequests extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 user = dataSnapshot.getValue(User.class);
-
-                tvNHName = (TextView) findViewById(R.id.nav_header_title);
-                tvNHMail = (TextView) findViewById(R.id.nav_header_mail);
-
-
-                tvNHName.setText(user.getName());
-                tvNHMail.setText(user.getEmail());
+                userDisplayName = user.getName();
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -172,6 +176,7 @@ public class AllRequests extends AppCompatActivity {
             @Override
             protected void populateViewHolder(BookViewHolder viewHolder, final BookRequest bookRequest, final int position) {
 
+                isbn = bookRequest.getBookISBN();
                 viewHolder.setTitle(bookRequest.getBookName());
 
                 //if I am the requester
@@ -181,19 +186,63 @@ public class AllRequests extends AppCompatActivity {
                         viewHolder.setStatus(bookRequest.getStatus().toUpperCase()+"\nWait for response from other user");
                         viewHolder.setPending();
                     } else if (bookRequest.getStatus().contains("active")){
-                        viewHolder.setStatus(bookRequest.getStatus().toUpperCase() + "\nTap to chat");
+                        viewHolder.setStatus(bookRequest.getStatus().toUpperCase() + "\nTap to select an option");
                         viewHolder.setActive();
 
                         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                Intent intent = new Intent(AllRequests.this, Chat.class);
-                                intent.putExtra("bookOwnerId", bookRequest.getBookOwnerID());
-                                intent.putExtra("bookOwnerName", bookOwnerName);
-                                intent.putExtra("userDisplayName", "USER AF");
-                                intent.putExtra("bookISBN", isbn);
-                                intent.putExtra("bookTitle", title);
-                                startActivity(intent);
+                                PopupMenu popup = new PopupMenu(AllRequests.this,view);
+                                popup.inflate(R.menu.menu_all_requests_requester);
+                                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem item) {
+                                        switch (item.getItemId()) {
+                                            case R.id.viewBook:
+                                                //handle menu2 click
+                                                return true;
+                                            case R.id.chat:
+                                                Intent intent = new Intent(AllRequests.this, Chat.class);
+                                                intent.putExtra("bookOwnerId", bookRequest.getBookOwnerID());
+                                                intent.putExtra("bookRequesterID", bookRequest.getRequesterID());
+                                                //intent.putExtra("userDisplayName", userDisplayName);
+                                                intent.putExtra("bookISBN", isbn);
+                                                intent.putExtra("bookTitle", title);
+                                                startActivity(intent);
+                                                return true;
+                                            case R.id.returnBook:
+                                                //handle menu2 click
+                                                return true;
+                                            case R.id.reviewBook:
+                                                new AppRatingDialog.Builder()
+                                                        .setPositiveButtonText("Submit")
+                                                        //.setNegativeButtonText("Cancel")
+                                                        //.setNeutralButtonText("Later")
+                                                        .setNoteDescriptions(Arrays.asList("Very Bad", "Not good", "Quite ok", "Very Good", "Excellent !!!"))
+                                                        .setDefaultRating(4)
+                                                        .setTitle("Rate this book")
+                                                        .setDescription("Please select some stars and give your feedback")
+                                                        .setDefaultComment("This book is pretty cool !")
+                                                        .setStarColor(R.color.starColor)
+                                                        .setNoteDescriptionTextColor(R.color.noteDescriptionTextColor)
+                                                        .setTitleTextColor(R.color.titleTextColor)
+                                                        .setDescriptionTextColor(R.color.contentTextColor)
+                                                        .setHint("Please write your comment here ...")
+                                                        .setHintTextColor(R.color.hintTextColor)
+                                                        .setCommentTextColor(R.color.commentTextColor)
+                                                        .setCommentBackgroundColor(R.color.colorPrimaryDark)
+                                                        .setWindowAnimation(R.style.MyDialogFadeAnimation)
+                                                        .create(AllRequests.this)
+                                                        .show();
+
+                                                reviewISBN =   firebaseRecyclerAdapter.getRef(position).getKey();
+                                                return true;
+                                            default:
+                                                return false;
+                                        }
+                                    }
+                                });
+                                popup.show();
                             }
                         });
                     }else if (bookRequest.getStatus().contains("reject")){
@@ -228,10 +277,11 @@ public class AllRequests extends AppCompatActivity {
                         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+
                                 Intent intent = new Intent(AllRequests.this, Chat.class);
                                 intent.putExtra("bookOwnerId", bookRequest.getBookOwnerID());
-                                intent.putExtra("bookOwnerName", bookOwnerName);
-                                intent.putExtra("userDisplayName", "USER AF");
+                                intent.putExtra("bookRequesterID", bookRequest.getRequesterID());
+                                //intent.putExtra("userDisplayName", userDisplayName);
                                 intent.putExtra("bookISBN", isbn);
                                 intent.putExtra("bookTitle", title);
                                 startActivity(intent);
@@ -312,6 +362,26 @@ public class AllRequests extends AppCompatActivity {
                 }).setCancelable(true).show();
     }
 
+    @Override
+    public void onPositiveButtonClicked(int i, String s) {
+        //Toast.makeText(this, i + "\n" + s, Toast.LENGTH_SHORT).show();
+        review.setText(s);
+        //review.setIsbn(isbn);
+        review.setIsbn(reviewISBN);
+        review.setRate("" + i);
+        review.setUserID(userID);   //always this userID = requester rates
+        //database.child("reviews").child(reviewISBN).push().setValue(review);
+        database.child("reviews").child(reviewISBN).child(userID).setValue(review);
+    }
+
+    @Override
+    public void onNegativeButtonClicked() {
+    }
+
+    @Override
+    public void onNeutralButtonClicked() {
+    }
+
 
     //Read and save each book data and create a separate view for it
     // prepare for CardView
@@ -324,7 +394,6 @@ public class AllRequests extends AppCompatActivity {
             mView = itemView;
         }
 
-
         public void hideView(){
             mView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
             mView.setVisibility(View.GONE);
@@ -333,6 +402,7 @@ public class AllRequests extends AppCompatActivity {
         public void setPending(){
             mView.findViewById(R.id.btnStatus).setBackgroundColor(Color.YELLOW);
         }
+
         public void setActive(){
             mView.findViewById(R.id.btnStatus).setBackgroundColor(Color.GREEN);
         }
@@ -340,6 +410,9 @@ public class AllRequests extends AppCompatActivity {
             mView.findViewById(R.id.btnStatus).setBackgroundColor(Color.RED);
         }
 
+        public void setClose(){
+            mView.findViewById(R.id.btnStatus).setBackgroundColor(Color.GRAY);
+        }
 
 
 

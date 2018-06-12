@@ -5,7 +5,7 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/chat_cardview">
+    android:id="@+id/review_cardview">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,24 +26,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+
+            <RatingBar
+                android:id="@+id/review_star"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_marginTop="13dp"/>
+
+
             <TextView
-                android:id="@+id/cvs_message"
+                android:id="@+id/review_user"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User"
+                android:textColor="@color/colorAccent" />
+
+
+
+
+            <TextView
+                android:id="@+id/review_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/margin"
-                android:text="Message"
-                android:textSize="18sp" />
-
-
-
-            <TextView
-                android:id="@+id/cvs_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/margin"
-                android:text="time"
-                android:textColor="@color/colorAccent"
-                android:textSize="10sp" />
+                android:layout_marginTop="5dp"
+                android:text="Review"
+                android:textSize="14sp" />
 
 
         </LinearLayout>
