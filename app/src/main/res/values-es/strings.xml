@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Bookulu</string>
+    <string name="activity_viewProfile">Ver perfil</string>
+    <string name="activity_editProfile">Editar perfil</string>
+    <string name="activity_insertBook">Nuevo libro</string>
+    <string name="activity_showAllBooks">Todos los libros</string>
+    <string name="title_activity_register">Registro</string>
+    <string name="title_activity_view_book">Detalles del libro</string>
+    <string name="title_activity_searchBook">Busca un libro</string>
+    <string name="title_activity_all_chats">Mensajes</string>
+    <string name="title_activity_chats">Chatendo...</string>
+    <string name="title_activity_maps">Mapa</string>
+
+    <!-- Log in VIEW -->
+    <string name="title_activity_login">Iniciar sesión</string>
+    <string name="hint_name">Nombre</string>
+    <string name="hint_email">Correo electrónico</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="hint_password_confirm">Confirma contraseña</string>
+    <string name="hint_city">Ciudad</string>
+    <string name="action_sign_in">Iniciar sesión</string>
+    <string name="action_sign_up">Registarse</string>
+    <string name="action_sign_in_short">Iniciar sesión</string>
+    <string name="error_invalid_email">El correo electrónico es inválido</string>
+    <string name="error_invalid_password">La contraseña es demasiado corta</string>
+    <string name="error_invalid_name">El nombre no es válido</string>
+    <string name="error_incorrect_password">La contraseña es incorrecta</string>
+    <string name="error_invalid_repeat_password">La contraseña es incorrecta</string>
+    <string name="error_invalid_city">El nombre de la ciudad no es válido</string>
+    <string name="error_field_required">Este campo es obligatorio</string>
+
+    <!-- Main Activity VIEW -->
+    <string name="title_activity_main">Bookulu</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Title</string>
+    <string name="nav_header_subtitle">subtitle</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="nav_header_name">Navigation name</string>
 
     <!-- VIEW PROFILE VIEW -->
     <string name="edit_icon_name">Editar perfil</string>
@@ -13,4 +51,76 @@
     <!-- EDIT PROFILE VIEW -->
     <string name="load_image_button">Cargar imagen</string>
     <string name="open_camera_button">Abrir cámara</string>
+
+    <!-- TODO seguir aquí -->
+
+    <!-- Insert Book VIEW -->
+    <string name="book_isbn">ISBN</string>
+    <string name="load_isbn">Load</string>
+    <string name="book_title">Title</string>
+    <string name="book_author">Author(s)</string>
+    <string name="book_publisher">Publisher</string>
+    <string name="book_editYear">Edition Year</string>
+    <string name="book_genre">Genre</string>
+    <string-array name="book_genre_list">
+        <item>SELECT</item>
+        <item>Science</item>
+        <item>Technology</item>
+        <item>Fiction</item>
+        <item>Novel</item>
+        <item>Computer</item>
+        <item>Sport</item>
+        <item>Story</item>
+    </string-array>
+    <string name="book_tags">Tags</string>
+    <string name="book_condition">Condition</string>
+    <string name="book_location_button">Choose location</string>
+    <string name="book_location">No location chosen</string>
+
+    <!-- Search Book VIEW -->
+    <string-array name="search_factor">
+        <item>Search by</item>
+        <item>> Title</item>
+        <item>> Author</item>
+        <item>> Publisher</item>
+    </string-array>
+
+    <!--menu-->
+    <string name="menu_insert_book">Insert New Book</string>
+    <string name="menu_view_profile">View Profile</string>
+    <string name="menu_edit_profile">Edit Profile</string>
+    <string name="menu_messages">Messages</string>
+    <string name="menu_about_us">About us</string>
+    <string name="menu_sign_out">Sign out</string>
+
+    <!-- Alerts-->
+    <string name="success">Success</string>
+    <string name="register_success">Registered successfully</string>
+    <string name="downloading">Downloading...</string>
+    <string name="downloaded">Downloaded successfully</string>
+    <string name="fetching_books">Fetching Books</string>
+    <string name="please_wait">Please Wait</string>
+
+
+    <!--errors-->
+    <string name="error_invalid_isbn">Fill the ISBN</string>
+    <string name="error_invalid_title">Fill the title</string>
+    <string name="error_invalid_author">Fill the author(s)</string>
+    <string name="error_invalid_publisher">Fill the publisher</string>
+    <string name="error_invalid_edityear">Fill the year</string>
+    <string name="error_invalid_genre">Select a genre</string>
+    <string name="error_invalid_condition">Fill the book condition</string>
+    <string name="error_invalid_search_factor">Select a criteria</string>
+    <string name="error_empty_searchvalue">Please fill with a text</string>
+    <string name="error_network">Please check your internet connection.</string>
+    <string name="error_noImage">Please provide an image.</string>
+    <string name="error">An error happened</string>
+    <string name="title_activity_about_us">About Us</string>
+    <string name="large_text">
+        "Mobile Application Developement\n2017-2018\n\n"
+        "Javad Alizadeh Shabkhoslati (s235967)\n"
+        "Sergio Aula (s254667)\n"
+        "Mohammad Vesaghati (s...)\n"
+    </string>
+
 </resources>
