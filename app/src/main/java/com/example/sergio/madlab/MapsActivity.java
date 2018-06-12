@@ -55,7 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void putBookLocations(DatabaseReference database) {
         database.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 DataSnapshot locationsSnapshot = dataSnapshot.child("locations");
                 Iterable<DataSnapshot> bookChildren = locationsSnapshot.getChildren();
                 for (DataSnapshot book : bookChildren) {
@@ -96,14 +96,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        //Toast.makeText(getApplicationContext(),"hola", Toast.LENGTH_LONG).show();
 
         Intent intent = new Intent(getBaseContext(), ViewBook.class);
         intent.putExtra("keyISBN", marker.getSnippet());
-        //TODO arreglar el usuario a mostrar
-        //intent.putExtra("userDisplayName", tvNHName.getText().toString());
 
         startActivity(intent);
         return false;
+    }
+
+    private void doSearch() {
+        Intent intent = getIntent();
+        String searchFactor = intent.getStringExtra("searchFactor");
+        String searchValue = intent.getStringExtra("searchValue");
+        //TODO
+
     }
 }

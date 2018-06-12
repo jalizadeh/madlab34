@@ -75,6 +75,8 @@
     </string-array>
     <string name="book_tags">Tags</string>
     <string name="book_condition">Condition</string>
+    <string name="book_location_button">Choose location</string>
+    <string name="book_location">No location chosen</string>
 
 
     <!-- Search Book VIEW -->
