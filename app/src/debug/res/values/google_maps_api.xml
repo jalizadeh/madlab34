@@ -21,10 +21,10 @@
     string in this file.
     -->
 
-    <!--Javad-->
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD0u-62BpgLH6wPVeOHqSLKskbNWiSj4mE </string>
-
-
     <!--Sergio-->
-    <!--<string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyB4ReA3Sh5idOBdPOQtZ10VmJHYmtWOXiM</string>-->
+    <!--<string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD0u-62BpgLH6wPVeOHqSLKskbNWiSj4mE </string>-->
+
+
+    <!--Javad-->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyB4ReA3Sh5idOBdPOQtZ10VmJHYmtWOXiM</string>
 </resources>
