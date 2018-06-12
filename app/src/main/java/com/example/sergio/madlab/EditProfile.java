@@ -28,6 +28,15 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.sergio.madlab.Classes.User;
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,10 +56,11 @@ import java.io.IOException;
 
 ;
 
-public class EditProfile extends AppCompatActivity implements View.OnClickListener{
+public class EditProfile extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback {
 
     private final int OPEN_GALLERY = 5;
     private final int OPEN_CAMERA = 6;
+    private final int PLACE_PICKER_REQUEST = 4;
 
     private final String filename = "profileImage.jpg";
     private static final String filepath = "images";
@@ -92,6 +102,10 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
     private String userIDfromDB;
 
     //private ProgressDialog progressDialog;
+
+    //Location
+    private LatLng chosenLocation;
+    private GoogleMap mMap;
 
 
     @Override
@@ -295,15 +309,32 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             } catch (IOException e) {
                 Toast.makeText(EditProfile.this, "loading failed.", Toast.LENGTH_SHORT).show();
             }
-        }
+        } else if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(intent, this);
+                chosenLocation = place.getLatLng();
+                Toast.makeText(EditProfile.this, "Location chosen successfully", Toast.LENGTH_SHORT).show();
+                onMapReady(mMap);
+            }
 
-        if (requestCode == OPEN_CAMERA && resultCode == RESULT_OK && intent != null) {
+        } else if (requestCode == OPEN_CAMERA && resultCode == RESULT_OK && intent != null) {
             bitmap = (Bitmap) intent.getExtras().get("data");
             path = saveToInternalStorage(bitmap, filename);
             editor.putString("imagePath", path);
             editor.commit();
             profileImage.setImageBitmap(bitmap);
         }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        if (chosenLocation != null) {
+            mMap.clear();
+            mMap.addMarker(new MarkerOptions().position(chosenLocation).title(name));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(chosenLocation, 12.0f));
+        }
+
     }
 
 
@@ -335,6 +366,8 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             //user.setEmail(email);
             user.setBio(bio);
             user.setCity(city);
+
+            editLocation();
         }
 
         ref.child(userID).setValue(user, new DatabaseReference.CompletionListener() {
@@ -345,8 +378,21 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         });
     }
 
-
-
+    private void editLocation() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("user_locations");
+        GeoFire geoFire = new GeoFire(ref);
+        //TODO do this with current location or location chosen by user
+        geoFire.setLocation(userID, new GeoLocation(chosenLocation.latitude, chosenLocation.longitude), new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    System.err.println("There was an error saving the location to GeoFire: " + error);
+                } else {
+                    System.out.println("Location saved on server successfully!");
+                }
+            }
+        });
+    }
 
 
     public String saveToInternalStorage(Bitmap bitmapImage, String filename){
