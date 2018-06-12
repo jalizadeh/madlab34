@@ -10,7 +10,7 @@
     <string name="title_activity_all_chats">Messages</string>
     <string name="title_activity_chats">Chatting...</string>
     <string name="title_activity_maps">Map</string>
-
+    <string name="title_activity_all_requests">Manage Requests</string>
 
 
     <!-- Log in VIEW -->
@@ -95,6 +95,14 @@
     <string name="menu_messages">Messages</string>
     <string name="menu_about_us">About us</string>
     <string name="menu_sign_out">Sign out</string>
+    <string name="menu_requests">Requests</string>
+
+    <string name="menu_viewBook">View Book</string>
+    <string name="menu_chatWithOwner">Chat with owner</string>
+    <string name="menu_return_book">Return Book</string>
+    <string name="menu_review_book">Review Book</string>
+
+
 
     <!-- Alerts-->
     <string name="success">Success</string>
@@ -103,6 +111,11 @@
     <string name="downloaded">Downloaded successfully</string>
     <string name="fetching_books">Fetching Books</string>
     <string name="please_wait">Please Wait</string>
+
+
+    <!--request book -->
+    <string name="request_book">Request Book</string>
+    <string name="request_msg">Do you want to request the book?</string>
 
 
     <!--errors-->
@@ -125,5 +138,6 @@
         "Sergio Aula (s...)\n"
         "Mohammad Vesaghati (s...)\n"
     </string>
+    <string name="title_activity_maps2">Map</string>
 
 </resources>

@@ -1,6 +1,9 @@
 package com.example.sergio.madlab;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -8,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -44,8 +48,25 @@ import java.io.IOException;
 import com.example.sergio.madlab.Classes.*;
 
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+
+    private int count = 0;
+
 
     //retrieved data from database
     private String dbName="";
@@ -82,7 +103,7 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private String userID;
-    private DatabaseReference database, userDB, booksDB;
+    private DatabaseReference database, userDB, booksDB, notifDB;
     //private StorageReference storageRef;
 
     FirebaseRecyclerAdapter<Book, BookViewHolder> firebaseRecyclerAdapter;
@@ -138,6 +159,9 @@ public class MainActivity extends AppCompatActivity
         userID = firebaseAuth.getUid();
         database = FirebaseDatabase.getInstance().getReference();
         userDB = database.child("users");
+        notifDB = database.child("notifications");
+        notifDB.keepSynced(true);
+
 
         //if the user token is not in the local storage
         if(firebaseAuth.getCurrentUser() == null) {
@@ -155,8 +179,90 @@ public class MainActivity extends AppCompatActivity
         showAllBooks();
         getUserProfile();
 
+        //after everything fetched, notifications will be checked
+        getNotifications();
     }
 
+    private void getNotifications() {
+        notifDB.child(userID).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    int requestCount = dataSnapshot.getValue(Integer.class);
+                    if (requestCount > 0){
+                        // Create an explicit intent for an Activity in your app
+                        Intent intent = new Intent(MainActivity.this, AllRequests.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+
+                        NotificationCompat.Builder mBuilder =
+                                new NotificationCompat.Builder(MainActivity.this)
+                                        .setSmallIcon(R.drawable.ic_launcher_round)
+                                        .setContentTitle(requestCount + " new requests.")
+                                        .setContentText("Tap to see")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setContentIntent(pendingIntent)
+                                        .setAutoCancel(true);
+
+                        //update the menu
+                        count = count + requestCount;
+                        doIncrease(count);
+
+                        notifDB.child(userID).child("book_request").setValue(0);
+                        // Gets an instance of the NotificationManager service//
+                        NotificationManager mNotificationManager  =
+                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        mNotificationManager.notify(001, mBuilder.build());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+        notifDB.child(userID).child("message").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    int msgCount = dataSnapshot.getValue(Integer.class);
+                    if (msgCount > 0){
+                        Intent intent = new Intent(MainActivity.this, AllChats.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+
+                        NotificationCompat.Builder mBuilder =
+                                new NotificationCompat.Builder(MainActivity.this)
+                                        .setSmallIcon(R.drawable.ic_launcher_round)
+                                        .setContentTitle(msgCount + " new messages.")
+                                        .setContentText("Tap to see")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setContentIntent(pendingIntent)
+                                        .setAutoCancel(true);
+
+
+                        count = count + msgCount;
+                        doIncrease(count);
+
+                        notifDB.child(userID).child("message").setValue(0);
+                        NotificationManager mNotificationManager  =
+                                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        mNotificationManager.notify(002, mBuilder.build());
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+
+
+
+    }
 
 
     private void getUserProfile(){
@@ -214,6 +320,9 @@ public class MainActivity extends AppCompatActivity
             firebaseAuth.getInstance().signOut();
             finish();
             Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+        }else if (id == R.id.nav_requests) {
+            Intent intent = new Intent(this, AllRequests.class);
             startActivity(intent);
         } else if(id == R.id.nav_about){
             Intent intent = new Intent(this, AboutUs.class);
@@ -358,5 +467,61 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, ViewProfile.class);
         startActivity(intent);
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.notifications);
+        menuItem.setIcon(buildCounterDrawable(count, R.drawable.ic_popup_reminder));
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.notifications) {
+            Intent intent = new Intent(this, AllRequests.class);
+            startActivity(intent);
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+
+    private Drawable buildCounterDrawable(int count, int backgroundImageId) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.main_notification_counter, null);
+        view.setBackgroundResource(backgroundImageId);
+
+        if (count == 0) {
+            View counterTextPanel = view.findViewById(R.id.counterValuePanel);
+            counterTextPanel.setVisibility(View.GONE);
+        } else {
+            TextView textView = (TextView) view.findViewById(R.id.count);
+            textView.setText("" + count);
+        }
+
+        view.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+
+        view.setDrawingCacheEnabled(true);
+        view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+
+        return new BitmapDrawable(getResources(), bitmap);
+    }
+
+    private void doIncrease(int counter) {
+        counter++;
+        invalidateOptionsMenu();
+    }
+
 
 }

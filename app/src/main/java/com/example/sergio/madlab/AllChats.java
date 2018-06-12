@@ -33,6 +33,7 @@ public class AllChats extends AppCompatActivity {
     private FirebaseRecyclerAdapter<ChatHistory, ChatViewHolder> firebaseRecyclerAdapter;
 
     private String currentUserId;
+    private FirebaseAuth firebaseAuth;
     private DatabaseReference dbAllChats, allUserDatabase;
 
 
@@ -45,16 +46,29 @@ public class AllChats extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_allChats);
         setSupportActionBar(toolbar);
 
-        //comes from MainActivity
-        userDisplayName = getIntent().getStringExtra("userDisplayName");
-
-
         //manage users - currentUser & bookOwnerId
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         allUserDatabase = FirebaseDatabase.getInstance().getReference().child("users");
 
         showAllChats();
+        getUserProfile();
+
+    }
+
+
+
+    private void getUserProfile(){
+        allUserDatabase.child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                user = dataSnapshot.getValue(User.class);
+                userDisplayName = user.getName();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
 
@@ -63,12 +77,13 @@ public class AllChats extends AppCompatActivity {
                 (ChatHistory.class, R.layout.cardview_all_chats, ChatViewHolder.class, dbAllChats) {
             @Override
             protected void populateViewHolder(final ChatViewHolder viewHolder, ChatHistory history, final int position) {
-                // get the name of the bookOwner = chatWith
+                // bookOwnerID = chatWith
                 chatWith = history.getChatWith();
                 allUserDatabase.child(chatWith).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         user = dataSnapshot.getValue(User.class);
+
                         bookOwnerName = user.getName();
                         viewHolder.setChatWith(bookOwnerName);
                     }
@@ -87,8 +102,13 @@ public class AllChats extends AppCompatActivity {
                     public void onClick(View view) {
                         String bookOwnerId = firebaseRecyclerAdapter.getRef(position).getKey();
                         Intent intent = new Intent(getBaseContext(), Chat.class);
-                        intent.putExtra("chatWith", bookOwnerId);
+                        //intent.putExtra("bookOwnerId", bookOwnerId);
                         intent.putExtra("bookOwnerName", bookOwnerName);
+                        intent.putExtra("bookRequesterID", currentUserId);
+
+                        //this person im chatting with is the owner of the book
+                        intent.putExtra("bookOwnerId", chatWith);
+                        //intent.putExtra("bookRequesterID", chatWith);
                         intent.putExtra("userDisplayName", userDisplayName);
                         startActivity(intent);
                     }

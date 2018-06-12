@@ -1,6 +1,26 @@
 package com.example.sergio.madlab;
 
+
+
+import android.app.PendingIntent;
+import android.graphics.Color;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.app.NotificationManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.content.Context;
+
+
+import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +31,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -18,10 +39,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sergio.madlab.Classes.User;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -45,11 +68,16 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 
 import com.example.sergio.madlab.Classes.*;
+import com.stepstone.apprating.AppRatingDialog;
 
 
 public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
+
+    private int allRates, rateCounter;
+    private int currentCount;
 
     //for startchat btn in menu
     private Menu menu;
@@ -98,13 +126,20 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
     private FirebaseUser authUser;
     private StorageReference storageRef;
     private DatabaseReference database;
+    private DatabaseReference notifications;
+    private DatabaseReference requests;
+    private DatabaseReference reviewsDB;
     private DatabaseReference booksDB;
     private DatabaseReference userDB;
 
+    private RecyclerView mReviewList;
+    FirebaseRecyclerAdapter<Review, ViewBook.ReviewViewHolder> firebaseRecyclerAdapter;
 
     Uri uri;
     File filename;
     private String path;
+    private Notification notif;
+    private BookRequest bookRequest;
 
     private GoogleMap mMap;
 
@@ -124,10 +159,18 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
         userDisplayName = getIntent().getStringExtra("userDisplayName");
 
 
+        notif = new Notification();
+        bookRequest = new BookRequest();
+        allRates = 0;
+        rateCounter = 0;
+
         //Firebase
         database = FirebaseDatabase.getInstance().getReference();
         userDB = database.child("users");
         booksDB = database.child("books");
+        notifications = database.child("notifications");
+        requests = database.child("requests");
+        reviewsDB = database.child("reviews").child(keyISBN);
 
 
 
@@ -183,6 +226,8 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
+        showAllReviews();
     }
 
 
@@ -217,7 +262,7 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ViewBook.this, "ERROR fetching book data.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(ViewBook.this, "ERROR fetching book data.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -241,16 +286,73 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_chat) {
             if(showChatButton){
-                Intent intent = new Intent(ViewBook.this, Chat.class);
-                intent.putExtra("chatWith", bookOwnerId);
-                intent.putExtra("userDisplayName", userDisplayName);
-                intent.putExtra("bookOwnerName", bookOwnerName);
-                startActivity(intent);
+                requestTheBook();
                 return true;
             }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void requestTheBook() {
+        // first ask user if he is sure to request the book
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.request_book)
+                .setMessage(R.string.request_msg)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                                /*
+                                Intent intent = new Intent(ViewBook.this, Chat.class);
+                                intent.putExtra("chatWith", bookOwnerId);
+                                intent.putExtra("userDisplayName", userDisplayName);
+                                intent.putExtra("bookOwnerName", bookOwnerName);
+                                */
+
+                        //1. get the current value
+                        //2. update it +1
+                        notifications.child(bookOwnerId).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    currentCount = 0;
+                                    currentCount = dataSnapshot.getValue(Integer.class);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        notifications.child(bookOwnerId).child("book_request").setValue(currentCount + 1);
+
+
+                        bookRequest.setRequesterID(userID);
+                        bookRequest.setBookOwnerID(bookOwnerId);
+                        bookRequest.setBookISBN(isbn);
+                        bookRequest.setBookName(title);
+                        bookRequest.setStatus("pending");
+                        requests.child(userID).child(isbn).setValue(bookRequest);
+                        requests.child(bookOwnerId).child(isbn).setValue(bookRequest);
+                                /*
+                                Intent intent = new Intent(ViewBook.this, AllRequests.class);
+                                intent.putExtra("bookOwnerId", bookOwnerId);
+                                intent.putExtra("bookOwnerName", bookOwnerName);
+                                intent.putExtra("userDisplayName", userDisplayName);
+                                intent.putExtra("bookISBN", isbn);
+                                intent.putExtra("bookTitle", title);
+                                startActivity(intent);
+                                */
+
+                        Intent intent = new Intent(ViewBook.this, AllRequests.class);
+                        intent.putExtra("userDisplayName", userDisplayName);
+                        startActivity(intent);
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+
     }
 
 
@@ -284,6 +386,10 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
 
     //Set all the texts
     private void setTexts() {
+        //i will use these global variables again
+        isbn = book.getIsbn();
+        title = book.getTitle();
+
         tISBN.setText("ISBN: " + book.getIsbn());
         tTitle.setText(book.getTitle());
         tAuthor.setText(book.getAuthor());
@@ -314,7 +420,7 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
             }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(ViewBook.this, "Grabbing book photo\nplease wait...", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(ViewBook.this, "Grabbing book photo\nplease wait...", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (IOException e) {
@@ -338,11 +444,7 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(ViewBook.this, Chat.class);
-                    intent.putExtra("chatWith", bookOwnerId);
-                    intent.putExtra("userDisplayName", userDisplayName);
-                    intent.putExtra("bookOwnerName", bookOwnerName);
-                    startActivity(intent);
+                    requestTheBook();
                 }
             });
             showChatButton = true;
@@ -371,5 +473,110 @@ public class ViewBook extends AppCompatActivity implements OnMapReadyCallback {
 
             }
         });
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    /// showing reviews
+
+    //Read and save each book data and create a separate view for it
+    // prepare for CardView
+    public static  class ReviewViewHolder extends RecyclerView.ViewHolder{
+        View mView;
+        //Item currentItem;
+
+        public ReviewViewHolder(final View itemView){
+            super(itemView);
+            mView = itemView;
+        }
+
+
+        public void setUser(String user){
+            TextView userTxt = (TextView)mView.findViewById(R.id.review_user);
+            userTxt.setText(user);
+        }
+
+        public void setText(String title){
+            TextView nameTxt = (TextView)mView.findViewById(R.id.review_text);
+            nameTxt.setText(title);
+        }
+
+        public void setStar(String i){
+            RatingBar star = (RatingBar) mView.findViewById(R.id.review_star);
+            star.setNumStars(Integer.parseInt(i));
+        }
+    }
+
+
+
+
+    private void getAllReviews(){
+        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Review, ViewBook.ReviewViewHolder>
+                (Review.class, R.layout.cardview_review, ReviewViewHolder.class, reviewsDB) {
+            @Override
+            protected void populateViewHolder(final ViewBook.ReviewViewHolder viewHolder, final Review review, final int position) {
+                String tempuserID = review.getUserID();
+                userDB.child(tempuserID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        user = dataSnapshot.getValue(User.class);
+                        viewHolder.setUser(user.getName());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+                });
+
+                allRates = allRates + Integer.parseInt(review.getRate());
+                rateCounter = position + 1;
+                if(rateCounter != 0){
+                    updateAllStars(allRates, rateCounter);
+                }
+                /*
+                else if(rateCounter == 0){
+                    hideReviewBox();
+                }
+                */
+
+                //Toast.makeText(ViewBook.this, allRates + "\n"+rateCounter, Toast.LENGTH_SHORT).show();
+
+                viewHolder.setStar(review.getRate());
+                viewHolder.setText(review.getText());
+            };
+        };
+
+        mReviewList.setAdapter(firebaseRecyclerAdapter);
+
+
+    }
+
+
+
+    public void showAllReviews(){
+        //shows all books
+        reviewsDB.keepSynced(true);
+
+        mReviewList = (RecyclerView) findViewById(R.id.reviewsRecycleView);
+        mReviewList.hasFixedSize();
+        mReviewList.setLayoutManager(new LinearLayoutManager(this));
+
+        getAllReviews();
+    }
+
+
+    public void updateAllStars(int allRates, int rateCounter){
+        RatingBar tvallStars = (RatingBar) findViewById(R.id.review_allstars);
+        TextView tvallRates = (TextView) findViewById(R.id.review_allrates);
+
+        float totalRate = allRates / rateCounter;
+        tvallRates.setText(""+totalRate);
+        tvallStars.setRating(totalRate);
+    }
+
+
+    public void hideReviewBox(){
+        CardView cvReview = (CardView) findViewById(R.id.reviewCardView);
+        cvReview.setVisibility(View.GONE);
     }
 }
