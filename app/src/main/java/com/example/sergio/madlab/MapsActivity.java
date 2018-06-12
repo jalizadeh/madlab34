@@ -59,18 +59,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         Iterator it = markers.entrySet().iterator();
-        //LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry)it.next();
             mMap.addMarker((MarkerOptions) e.getValue()).setSnippet((String) e.getKey());
-            //builder.include(((MarkerOptions) e.getValue()).getPosition());
+            builder.include(((MarkerOptions) e.getValue()).getPosition());
         }
 
-        /*LatLngBounds bounds = builder.build();
+        /*
+        LatLngBounds bounds = builder.build();
         int padding = 0; // offset from edges of the map in pixels
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-        googleMap.animateCamera(cu);*/
+        googleMap.animateCamera(cu);
+        */
 
     }
 

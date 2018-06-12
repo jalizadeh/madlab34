@@ -78,7 +78,7 @@ public class ViewProfile extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-        progressDialog = new ProgressDialog(this);
+        //progressDialog = new ProgressDialog(this);
 
 
         authUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -169,9 +169,11 @@ public class ViewProfile extends AppCompatActivity {
     }
 
     private void downloadToLocalFile(StorageReference fileRef) {
+        /*
         progressDialog.setTitle(getString(R.string.downloading));
         progressDialog.setMessage(null);
         progressDialog.show();
+        */
         if (fileRef != null) {
 
             try {
@@ -182,22 +184,17 @@ public class ViewProfile extends AppCompatActivity {
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         Bitmap bmp = BitmapFactory.decodeFile(localFile.getAbsolutePath());
                         profileImage.setImageBitmap(bmp);
-                        progressDialog.dismiss();
+                        //progressDialog.dismiss();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
-                        progressDialog.dismiss();
+                        //progressDialog.dismiss();
                         Toast.makeText(ViewProfile.this, R.string.error, Toast.LENGTH_LONG).show();
                     }
                 }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        // progress percentage
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-
-                        // percentage in progress dialog
-                        progressDialog.setMessage(getString(R.string.downloaded) + ((int) progress) + " %");
                     }
                 });
             } catch (IOException e) {

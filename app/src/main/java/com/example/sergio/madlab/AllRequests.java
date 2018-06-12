@@ -68,7 +68,7 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
     private TextView tvNHName;
     private TextView tvNHMail;
 
-    private String reviewISBN;
+    private String reviewISBN, returnISBN;
 
     private String isbn="";
     private String title="";
@@ -199,6 +199,11 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
                                     public boolean onMenuItemClick(MenuItem item) {
                                         switch (item.getItemId()) {
                                             case R.id.viewBook:
+                                                returnISBN =   firebaseRecyclerAdapter.getRef(position).getKey();
+                                                Intent hi = new Intent(AllRequests.this, ViewBook.class);
+                                                hi.putExtra("keyISBN", returnISBN);
+                                                hi.putExtra("userDisplayName", "from ALL.REQ");
+                                                startActivity(hi);
                                                 //handle menu2 click
                                                 return true;
                                             case R.id.chat:
@@ -211,12 +216,24 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
                                                 startActivity(intent);
                                                 return true;
                                             case R.id.returnBook:
+
+                                                returnISBN =   firebaseRecyclerAdapter.getRef(position).getKey();
+
+                                                bookRequestObject.setBookOwnerID(bookRequest.getBookOwnerID());
+                                                //bookRequestObject.setBookISBN(bookRequest.getBookISBN());
+                                                bookRequestObject.setBookISBN(returnISBN);
+                                                bookRequestObject.setBookName(bookRequest.getBookName());
+                                                bookRequestObject.setBookOwnerID(bookRequest.getBookOwnerID());
+                                                bookRequestObject.setRequesterID(bookRequest.getRequesterID());
+                                                bookRequestObject.setStatus("returned");
+
+                                                askToReturn(bookRequest.getBookOwnerID(), bookRequestObject);
                                                 //handle menu2 click
                                                 return true;
                                             case R.id.reviewBook:
                                                 new AppRatingDialog.Builder()
                                                         .setPositiveButtonText("Submit")
-                                                        //.setNegativeButtonText("Cancel")
+                                                        .setNegativeButtonText("Cancel")
                                                         //.setNeutralButtonText("Later")
                                                         .setNoteDescriptions(Arrays.asList("Very Bad", "Not good", "Quite ok", "Very Good", "Excellent !!!"))
                                                         .setDefaultRating(4)
@@ -248,6 +265,9 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
                     }else if (bookRequest.getStatus().contains("reject")){
                         viewHolder.setStatus(bookRequest.getStatus().toUpperCase()+"ED\nYour request is rejected");
                         viewHolder.setReject();
+                    }else if (bookRequest.getStatus().contains("returned")){
+                        viewHolder.setStatus(bookRequest.getStatus().toUpperCase()+"\nYou returned this book.");
+                        viewHolder.setReturned();
                     }
                 } else if(bookRequest.getBookOwnerID().contains(userID)){
                     //if i am the owner of the book
@@ -257,7 +277,8 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
                         viewHolder.setPending();
 
                         bookRequestObject.setBookOwnerID(bookRequest.getBookOwnerID());
-                        bookRequestObject.setBookISBN(bookRequest.getBookISBN());
+                        //bookRequestObject.setBookISBN(bookRequest.getBookISBN());
+                        bookRequestObject.setBookISBN(isbn);
                         bookRequestObject.setBookName(bookRequest.getBookName());
                         bookRequestObject.setBookOwnerID(bookRequest.getBookOwnerID());
                         bookRequestObject.setRequesterID(bookRequest.getRequesterID());
@@ -290,6 +311,9 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
                     }else if (bookRequest.getStatus().contains("reject")){
                         viewHolder.setStatus(bookRequest.getStatus().toUpperCase()+"ED\nYou rejected the request");
                         viewHolder.setReject();
+                    }else if (bookRequest.getStatus().contains("returned")){
+                        viewHolder.setStatus(bookRequest.getStatus().toUpperCase()+"\nThis book is returned to you.");
+                        viewHolder.setReturned();
                     }
                 }
             }
@@ -304,7 +328,7 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
     public void askToDecide(final String bookRequesterID, final BookRequest bookRequestObject){
         new AlertDialog.Builder(this)
                 .setTitle(R.string.request_book)
-                .setMessage("Do you accept to lend the book?")
+                .setMessage("Do you want to lend the book?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton("Accept", new DialogInterface.OnClickListener() {
 
@@ -362,6 +386,47 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
                 }).setCancelable(true).show();
     }
 
+
+
+    public void askToReturn(final String bookOwnerID, final BookRequest bookRequestObject){
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.return_book)
+                    .setMessage("Do you want to return the book?")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int whichButton) {
+
+                            //1. get the current value
+                            //2. update it +1
+                            notificationsDB.child(bookOwnerID).child("book_request").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()){
+                                        currentCount = 0;
+                                        currentCount = dataSnapshot.getValue(Integer.class);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+
+                            notificationsDB.child(bookOwnerID).child("book_request").setValue(currentCount + 1);
+
+                            bookRequestObject.setStatus("returned");
+                            requestsDB.child(bookRequestObject.getBookISBN()).setValue(bookRequestObject);
+                            database.child("requests").child(bookOwnerID).child(bookRequestObject.getBookISBN()).setValue(bookRequestObject);
+
+                        }})
+                    .setNegativeButton("Cancel", null)
+                    .show();
+
+
+    }
+
     @Override
     public void onPositiveButtonClicked(int i, String s) {
         //Toast.makeText(this, i + "\n" + s, Toast.LENGTH_SHORT).show();
@@ -372,6 +437,7 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
         review.setUserID(userID);   //always this userID = requester rates
         //database.child("reviews").child(reviewISBN).push().setValue(review);
         database.child("reviews").child(reviewISBN).child(userID).setValue(review);
+        Toast.makeText(this, "Your rate submitted!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -410,11 +476,9 @@ public class AllRequests extends AppCompatActivity implements RatingDialogListen
             mView.findViewById(R.id.btnStatus).setBackgroundColor(Color.RED);
         }
 
-        public void setClose(){
+        public void setReturned(){
             mView.findViewById(R.id.btnStatus).setBackgroundColor(Color.GRAY);
         }
-
-
 
 
         public void setTitle(String title){
