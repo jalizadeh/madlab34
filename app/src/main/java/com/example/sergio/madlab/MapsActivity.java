@@ -19,7 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
 
@@ -46,7 +46,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        googleMap.setOnMarkerClickListener(this);
+        googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Intent intent = new Intent(getBaseContext(), ViewBook.class);
+                intent.putExtra("keyISBN", marker.getSnippet());
+
+                startActivity(intent);
+            }
+        });
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
         putBookLocations(ref);
@@ -94,16 +103,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-
-        Intent intent = new Intent(getBaseContext(), ViewBook.class);
-        intent.putExtra("keyISBN", marker.getSnippet());
-
-        startActivity(intent);
-        return false;
-    }
-
     private void doSearch() {
         Intent intent = getIntent();
         String searchFactor = intent.getStringExtra("searchFactor");
@@ -111,4 +110,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //TODO
 
     }
+
 }
