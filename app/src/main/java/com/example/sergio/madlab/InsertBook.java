@@ -51,7 +51,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -77,7 +82,7 @@ import org.json.JSONObject;
 import com.example.sergio.madlab.Classes.*;
 
 
-public class InsertBook extends AppCompatActivity implements View.OnClickListener{
+public class InsertBook extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback {
 
     /*
     //retrieved data from database
@@ -146,6 +151,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     private String path;
 
     private LatLng chosenLocation;
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,6 +195,9 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         authUser = FirebaseAuth.getInstance().getCurrentUser();
         userID = authUser.getUid();
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
     }
 
@@ -368,13 +377,23 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                 Place place = PlacePicker.getPlace(data, this);
                 chosenLocation = place.getLatLng();
                 Toast.makeText(InsertBook.this, "Location chosen successfully", Toast.LENGTH_SHORT).show();
-                TextView locationText = findViewById(R.id.textView_location);
-                locationText.setText(place.getAddress());
+                onMapReady(mMap);
             }
 
         } else {
             Toast.makeText(getApplicationContext(), "Invalid barcode!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        if (chosenLocation != null) {
+            mMap.clear();
+            mMap.addMarker(new MarkerOptions().position(chosenLocation).title(title));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(chosenLocation, 12.0f));
+        }
+
     }
 
 
