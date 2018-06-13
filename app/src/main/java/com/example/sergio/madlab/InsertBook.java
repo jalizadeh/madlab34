@@ -388,9 +388,10 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
         if (chosenLocation != null) {
             mMap.clear();
-            mMap.addMarker(new MarkerOptions().position(chosenLocation).title(title));
+            mMap.addMarker(new MarkerOptions().position(chosenLocation));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(chosenLocation, 12.0f));
         }
 

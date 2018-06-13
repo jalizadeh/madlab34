@@ -100,16 +100,16 @@ public class AllChats extends AppCompatActivity {
                 viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        String bookOwnerId = firebaseRecyclerAdapter.getRef(position).getKey();
+                        //String bookOwnerId = firebaseRecyclerAdapter.getRef(position).getKey();
                         Intent intent = new Intent(getBaseContext(), Chat.class);
-                        //intent.putExtra("bookOwnerId", bookOwnerId);
+                        intent.putExtra("bookOwnerId", chatWith);
                         intent.putExtra("bookOwnerName", bookOwnerName);
                         intent.putExtra("bookRequesterID", currentUserId);
 
                         //this person im chatting with is the owner of the book
-                        intent.putExtra("bookOwnerId", chatWith);
+                        //intent.putExtra("bookOwnerId", chatWith);
                         //intent.putExtra("bookRequesterID", chatWith);
-                        intent.putExtra("userDisplayName", userDisplayName);
+                        //intent.putExtra("userDisplayName", userDisplayName);
                         startActivity(intent);
                     }
                 });

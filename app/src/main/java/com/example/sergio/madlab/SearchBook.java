@@ -320,6 +320,7 @@ public class SearchBook extends AppCompatActivity {
                             viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
 
+                            Toast.makeText(SearchBook.this, isbn, Toast.LENGTH_SHORT).show();
                             getBookPosition(isbn, title);
 
 
@@ -398,11 +399,11 @@ public class SearchBook extends AppCompatActivity {
     }
 
     private void getBookPosition(final String bookId, final String title) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations/" + bookId);
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+        //DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations/" + bookId);
+        database.child("locations").child(bookId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child("locations").hasChild(bookId)) {
+                if (dataSnapshot.exists()) {
                     double latitude = (double) dataSnapshot.child("l").child("0").getValue();
                     double longitude = (double) dataSnapshot.child("l").child("1").getValue();
                     Toast.makeText(SearchBook.this, latitude + " " + longitude, Toast.LENGTH_SHORT).show();
@@ -413,7 +414,6 @@ public class SearchBook extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
 

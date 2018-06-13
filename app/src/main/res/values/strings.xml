@@ -75,7 +75,7 @@
     </string-array>
     <string name="book_tags">Tags</string>
     <string name="book_condition">Condition</string>
-    <string name="book_location_button">Choose location</string>
+    <string name="book_location_button">Change Location</string>
     <string name="book_location">No location chosen</string>
 
 
@@ -115,6 +115,7 @@
 
     <!--request book -->
     <string name="request_book">Request Book</string>
+    <string name="return_book">Request Book</string>
     <string name="request_msg">Do you want to request the book?</string>
 
 

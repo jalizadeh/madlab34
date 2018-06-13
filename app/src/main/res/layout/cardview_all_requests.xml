@@ -6,7 +6,8 @@
     android:orientation="vertical"
     android:backgroundTint="#FFF"
     android:elevation="5dp"
-    android:paddingTop="2dp">
+    android:paddingTop="2dp"
+    android:layout_marginTop="2dp">
 
 
     <LinearLayout
@@ -43,7 +44,7 @@
                 android:id="@+id/car_bookStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="STATUS"
+                android:text="Returned"
                 android:layout_weight="4"/>
 
         </LinearLayout>

@@ -6,10 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,11 +30,13 @@ import com.example.sergio.madlab.Classes.*;
 
 public class Chat extends AppCompatActivity {
 
+    private int endPosition;
     private User user;
 
     private ImageView sendButton;
     private EditText messageArea;
 
+    private LinearLayoutManager mLinearLayoutManager;
     private RecyclerView mChatList;
     private FirebaseRecyclerAdapter<Message, ChatViewHolder> firebaseRecyclerAdapter;
 
@@ -92,11 +97,14 @@ public class Chat extends AppCompatActivity {
                     Message msg = new Message();
                     msg.setTime(formatter.format(date));
                     msg.setMessage(userDisplayName + ":\n"+messageText);
+                    /*
                     if (currentUserId.contains(bookOwnerId)){
                         msg.setWho("1");
                     } else {
                         msg.setWho("0");
                     }
+                    */
+                    msg.setWho(currentUserId);
 
                     userChats.push().setValue(msg);
 
@@ -158,18 +166,52 @@ public class Chat extends AppCompatActivity {
                 String time = msg.getTime().toString();
                 String who = msg.getWho().toString();
 
+                /*
                 if(who.equals("1")){
                     viewHolder.setOwner();
                     viewHolder.setMessage(message);
                 }else {
+                    viewHolder.setRequester();
+                    viewHolder.setMessage(message);
+                }
+                */
+
+                if(who.equals(currentUserId)){
+                    viewHolder.setOut();
+                    viewHolder.setMessage(message);
+                }else {
+                    viewHolder.setIn();
                     viewHolder.setMessage(message);
                 }
 
+
                 viewHolder.setTime(time);
+
+                endPosition = position;
             }
         };
 
 
+        firebaseRecyclerAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                int friendlyMessageCount = firebaseRecyclerAdapter.getItemCount();
+                int lastVisiblePosition =
+                        mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
+                // If the recycler view is initially being loaded or the
+                // user is at the bottom of the list, scroll to the bottom
+                // of the list to show the newly added message.
+                if (lastVisiblePosition == -1 ||
+                        (positionStart >= (friendlyMessageCount - 1) &&
+                                lastVisiblePosition == (positionStart - 1))) {
+                    mChatList.scrollToPosition(positionStart);
+                }
+            }
+        });
+
+
+        mChatList.setLayoutManager(mLinearLayoutManager);
        mChatList.setAdapter(firebaseRecyclerAdapter);
     }
 
@@ -210,7 +252,10 @@ public class Chat extends AppCompatActivity {
 
         mChatList = (RecyclerView) findViewById(R.id.chatRecycleView);
         mChatList.hasFixedSize();
-        mChatList.setLayoutManager(new LinearLayoutManager(this));
+        mLinearLayoutManager = new LinearLayoutManager(this);
+        mLinearLayoutManager.setStackFromEnd(true);
+        //mChatList.setLayoutManager(new LinearLayoutManager(this));
+        mChatList.setLayoutManager(mLinearLayoutManager);
     }
 
 
@@ -224,10 +269,18 @@ public class Chat extends AppCompatActivity {
 
         }
 
-
-        public void setOwner(){
-            mView.findViewById(R.id.chat_cardview).setBackgroundColor(Color.GRAY);
+        public void setOut(){
+            mView.findViewById(R.id.chat_cardview).setBackgroundResource(R.drawable.bubble_out);
         }
+
+
+        public void setIn(){
+            mView.findViewById(R.id.chat_cardview).setBackgroundResource(R.drawable.bubble_in);
+        }
+
+
+
+
 
         public void setMessage(String title) {
             TextView nameTxt = (TextView) mView.findViewById(R.id.cvs_message);
@@ -239,5 +292,7 @@ public class Chat extends AppCompatActivity {
             propTxt.setText(time);
 
         }
+
+
     }
 }
