@@ -74,6 +74,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.animateCamera(cu);
         */
 
+
+        if(markers.size() != 0){
+            LatLngBounds bounds = builder.build();
+            int padding = 150;
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            googleMap.animateCamera(cu);
+        }
     }
 
 }

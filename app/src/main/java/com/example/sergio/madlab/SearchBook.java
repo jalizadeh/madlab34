@@ -84,7 +84,7 @@ public class SearchBook extends AppCompatActivity {
 
     FloatingActionButton fab;
 
-
+    private int searchCount;
 
     //
     private String userID;
@@ -114,10 +114,14 @@ public class SearchBook extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(SearchBook.this, MapsActivity.class);
-                intent.putExtra("markers", markers);
-                startActivity(intent);
-            }
+                if(searchCount != 0) {
+                    Intent intent = new Intent(SearchBook.this, MapsActivity.class);
+                    intent.putExtra("markers", markers);
+                    startActivity(intent);
+                } else{
+                    Toast.makeText(SearchBook.this, "There is no item\nto show", Toast.LENGTH_SHORT).show();
+                }
+               }
         });
 
 
@@ -308,6 +312,8 @@ public class SearchBook extends AppCompatActivity {
                 title = book.getTitle();
                 author = book.getAuthor();
                 publisher = book.getPublisher();
+                
+                searchCount = position;
 
                 switch (searchFactor) {
                     case "> title":
@@ -320,7 +326,7 @@ public class SearchBook extends AppCompatActivity {
                             viewHolder.setGenre(book.getGenre());
                             viewHolder.setImage(isbn);
 
-                            Toast.makeText(SearchBook.this, isbn, Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(SearchBook.this, isbn, Toast.LENGTH_SHORT).show();
                             getBookPosition(isbn, title);
 
 
@@ -406,7 +412,7 @@ public class SearchBook extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
                     double latitude = (double) dataSnapshot.child("l").child("0").getValue();
                     double longitude = (double) dataSnapshot.child("l").child("1").getValue();
-                    Toast.makeText(SearchBook.this, latitude + " " + longitude, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(SearchBook.this, latitude + " " + longitude, Toast.LENGTH_SHORT).show();
                     currentMarkerLocation = new LatLng(latitude, longitude);
                     markers.put(isbn, new MarkerOptions().position(currentMarkerLocation).title(title));
                 }

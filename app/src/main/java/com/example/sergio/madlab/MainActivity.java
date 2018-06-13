@@ -339,7 +339,7 @@ public class MainActivity extends AppCompatActivity
         //shows all books
         database = FirebaseDatabase.getInstance().getReference();
         booksDB = database.child("books");
-        booksDB.keepSynced(true);
+        //booksDB.keepSynced(true);
 
         mBookList = (RecyclerView) findViewById(R.id.myrecycleview);
         mBookList.hasFixedSize();
@@ -524,4 +524,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        getNotifications();
+    }
 }

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,6 +41,7 @@ import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -61,10 +64,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -80,9 +85,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.example.sergio.madlab.Classes.*;
+import com.stepstone.apprating.AppRatingDialog;
 
 
-public class InsertBook extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback {
+public class InsertBook extends AppCompatActivity
+        implements View.OnClickListener, OnMapReadyCallback {
 
     /*
     //retrieved data from database
@@ -142,7 +149,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     private String userID;
     private FirebaseUser authUser;
     private StorageReference storageRef;
-    private DatabaseReference database;
+    private DatabaseReference database, userLocation;
     private DatabaseReference booksDB;
 
 
@@ -173,6 +180,10 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         etCondition = (EditText) findViewById(R.id.editText_book_condition);
 
 
+
+        bookImage.setOnClickListener((View.OnClickListener) this);
+
+
         //get button views
         loadImage = (Button) findViewById(R.id.btnLoadImage);
         openCamera = (Button) findViewById(R.id.btnOpenCamera);
@@ -188,6 +199,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         //
         database = FirebaseDatabase.getInstance().getReference();
         booksDB = database.child("books");
+        userLocation = database.child("user_locations");
 
         storageRef = FirebaseStorage.getInstance().getReference();
 
@@ -199,6 +211,9 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
+
+        //onMapReady(mMap);
     }
 
 
@@ -297,7 +312,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
             startActivityForResult(galleryIntent, OPEN_GALLERY);
         }
         if (v == openCamera) {
-            //Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
                 if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, OPEN_CAMERA);
@@ -319,6 +334,34 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                 FindBookApiTask task = new FindBookApiTask();
                 task.execute(GOOGLE_ISBN_LINK + etISBN.getText().toString());
             }
+        }
+
+        if(v == bookImage){
+            PopupMenu popup = new PopupMenu(InsertBook.this,v);
+            popup.inflate(R.menu.upload_image);
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.openPhoto:
+                            Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(galleryIntent, OPEN_GALLERY);
+                            return true;
+                        case R.id.openCamera:
+                            Intent photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                            ActivityCompat.requestPermissions(InsertBook.this, new String[]{Manifest.permission.CAMERA}, OPEN_CAMERA);
+                            if (ContextCompat.checkSelfPermission(InsertBook.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                                if (!ActivityCompat.shouldShowRequestPermissionRationale(InsertBook.this, Manifest.permission.READ_CONTACTS)) {
+                                    //ActivityCompat.requestPermissions(InsertBook.this, new String[]{Manifest.permission.CAMERA}, OPEN_CAMERA);
+                                }
+                            }
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
+            });
+            popup.show();
         }
     }
 
@@ -351,14 +394,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (scanningResult != null && (scanningResult.getFormatName().equals("EAN_8") || scanningResult.getFormatName().equals("EAN_13"))) {
-            String scanContent = scanningResult.getContents();
-            String apiUrlString = GOOGLE_ISBN_LINK + scanContent;
-            FindBookApiTask task = new FindBookApiTask();
-            task.execute(apiUrlString);
-
-        } else if (requestCode == OPEN_GALLERY && resultCode == RESULT_OK && data != null){
+        if (requestCode == OPEN_GALLERY && resultCode == RESULT_OK && data != null){
             uri = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
@@ -367,27 +403,70 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
                 Toast.makeText(InsertBook.this, "loading failed.", Toast.LENGTH_SHORT).show();
             }
 
-        } else if (requestCode == OPEN_CAMERA && resultCode == RESULT_OK && data != null) {
+        }
+        if (requestCode == OPEN_CAMERA && resultCode == RESULT_OK && data != null) {
             uri = data.getData();
             bitmap = (Bitmap) data.getExtras().get("data");
             bookImage.setImageBitmap(bitmap);
 
-        } else if (requestCode == PLACE_PICKER_REQUEST) {
+        }
+        if (requestCode == OPEN_BARCODE_READER ) {
+            if (data != null){
+                if (resultCode == RESULT_OK){
+                    //
+                }
+            }else {
+                Toast.makeText(this, "No barcode read", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+        if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Place place = PlacePicker.getPlace(data, this);
                 chosenLocation = place.getLatLng();
-                Toast.makeText(InsertBook.this, "Location chosen successfully", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(InsertBook.this, "Location chosen successfully", Toast.LENGTH_SHORT).show();
                 onMapReady(mMap);
             }
 
-        } else {
-            Toast.makeText(getApplicationContext(), "Invalid barcode!", Toast.LENGTH_SHORT).show();
+        }
+
+
+        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (scanningResult != null){
+            if(scanningResult.getFormatName().equals("EAN_8") || scanningResult.getFormatName().equals("EAN_13"))
+            {
+                String scanContent = scanningResult.getContents();
+                String apiUrlString = GOOGLE_ISBN_LINK + scanContent;
+                FindBookApiTask task = new FindBookApiTask();
+                task.execute(apiUrlString);
+            }
+        } else if(scanningResult == null){
+            //
         }
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        userLocation.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    //DataSnapshot location = dataSnapshot;
+
+                    double latitude = (double) dataSnapshot.child("l").child("0").getValue();
+                    double longitude = (double) dataSnapshot.child("l").child("1").getValue();
+                    chosenLocation = new LatLng(latitude, longitude);
+                    mMap.addMarker(new MarkerOptions().position(chosenLocation).title(""));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(chosenLocation, 12.0f));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         if (chosenLocation != null) {
             mMap.clear();
@@ -525,12 +604,16 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         book.setCondition(condition);
         book.setUser(userID);
 
-        insertLocation();
+        insertLocation(isbn);
 
         booksDB.child(isbn).setValue(book);
     }
 
-    private void insertLocation() {
+
+
+
+
+    private void insertLocation(String isbn) {
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
         GeoFire geoFire = new GeoFire(ref);
@@ -547,6 +630,7 @@ public class InsertBook extends AppCompatActivity implements View.OnClickListene
         });
 
     }
+
 
     public void chooseLocation(View view) {
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();

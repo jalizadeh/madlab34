@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item android:id="@+id/openPhoto"
+        android:title="@string/menu_openPhoto"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:icon="@android:drawable/ic_menu_agenda"/>
+
+
+    <item android:id="@+id/openCamera"
+        android:title="@string/menu_openCamera"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:icon="@android:drawable/ic_menu_revert"/>
+</menu>

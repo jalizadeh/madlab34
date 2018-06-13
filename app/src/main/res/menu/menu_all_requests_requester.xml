@@ -5,10 +5,10 @@
 
 
         <item android:id="@+id/viewBook"
-        android:title="@string/menu_viewBook"
-        android:orderInCategory="100"
-        app:showAsAction="never"
-        android:icon="@android:drawable/sym_action_chat"/>
+                android:title="@string/menu_viewBook"
+                android:orderInCategory="100"
+                app:showAsAction="never"
+                android:icon="@android:drawable/sym_action_chat"/>
 
         <item android:id="@+id/chat"
             android:title="@string/menu_chatWithOwner"
@@ -16,15 +16,17 @@
             app:showAsAction="never"
             android:icon="@android:drawable/sym_action_chat"/>
 
-        <item android:id="@+id/returnBook"
-            android:title="@string/menu_return_book"
-            android:orderInCategory="100"
-            app:showAsAction="never"
-            android:icon="@android:drawable/ic_menu_revert"/>
 
         <item android:id="@+id/reviewBook"
             android:title="@string/menu_review_book"
             android:orderInCategory="100"
             app:showAsAction="never"
             android:icon="@android:drawable/ic_menu_agenda"/>
+
+
+        <item android:id="@+id/returnBook"
+            android:title="@string/menu_return_book"
+            android:orderInCategory="100"
+            app:showAsAction="never"
+            android:icon="@android:drawable/ic_menu_revert"/>
 </menu>
