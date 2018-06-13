@@ -67,6 +67,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             builder.include(((MarkerOptions) e.getValue()).getPosition());
         }
 
+        if (markers.size() != 0) {
+            LatLngBounds bounds = builder.build();
+            int padding = 150; // offset from edges of the map in pixels
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            googleMap.animateCamera(cu);
+        }
+
         /*
         LatLngBounds bounds = builder.build();
         int padding = 0; // offset from edges of the map in pixels
