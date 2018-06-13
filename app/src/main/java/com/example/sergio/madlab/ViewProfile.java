@@ -19,6 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sergio.madlab.Classes.User;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,7 +43,7 @@ import java.io.File;
 import java.io.IOException;
 
 
-public class ViewProfile extends AppCompatActivity {
+public class ViewProfile extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String filename = "profileImage.jpeg";
     private static final String TAG = "DatabaseError";
@@ -60,6 +66,8 @@ public class ViewProfile extends AppCompatActivity {
 
     private ImageView profileImage;
     private ProgressDialog progressDialog;
+
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +97,9 @@ public class ViewProfile extends AppCompatActivity {
         profileImage = (ImageView) findViewById(R.id.imageView);
         setImageView();
 
-
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
     }
 
@@ -206,5 +216,29 @@ public class ViewProfile extends AppCompatActivity {
         } else {
             Toast.makeText(ViewProfile.this, R.string.error_noImage, Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        database.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("user_locations").hasChild(userID)) {
+                    DataSnapshot user = dataSnapshot.child("user_locations").child(userID);
+                    double latitude = (double) user.child("l").child("0").getValue();
+                    double longitude = (double) user.child("l").child("1").getValue();
+                    LatLng location = new LatLng(latitude, longitude);
+                    mMap.addMarker(new MarkerOptions().position(location).title(ViewProfile.this.user.getName()));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 12.0f));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }
