@@ -61,6 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Iterator it = markers.entrySet().iterator();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
+
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry)it.next();
             mMap.addMarker((MarkerOptions) e.getValue()).setSnippet((String) e.getKey());

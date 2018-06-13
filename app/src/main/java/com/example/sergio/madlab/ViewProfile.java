@@ -207,7 +207,7 @@ public class ViewProfile extends AppCompatActivity  implements OnMapReadyCallbac
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         //progressDialog.dismiss();
-                        Toast.makeText(ViewProfile.this, R.string.error, Toast.LENGTH_LONG).show();
+                        //Toast.makeText(ViewProfile.this, R.string.error, Toast.LENGTH_LONG).show();
                     }
                 }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
@@ -218,7 +218,7 @@ public class ViewProfile extends AppCompatActivity  implements OnMapReadyCallbac
                 e.printStackTrace();
             }
         } else {
-            Toast.makeText(ViewProfile.this, R.string.error_noImage, Toast.LENGTH_LONG).show();
+            //Toast.makeText(ViewProfile.this, R.string.error_noImage, Toast.LENGTH_LONG).show();
         }
     }
 

@@ -114,13 +114,18 @@ public class SearchBook extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /*
                 if(searchCount != 0) {
-                    Intent intent = new Intent(SearchBook.this, MapsActivity.class);
-                    intent.putExtra("markers", markers);
-                    startActivity(intent);
+
                 } else{
                     Toast.makeText(SearchBook.this, "There is no item\nto show", Toast.LENGTH_SHORT).show();
                 }
+                */
+
+                Intent intent = new Intent(SearchBook.this, MapsActivity.class);
+                intent.putExtra("markers", markers);
+                startActivity(intent);
+
                }
         });
 
@@ -198,6 +203,7 @@ public class SearchBook extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if(validateValues()) {
+            markers.clear();
             doSearch();
         }
 
@@ -414,7 +420,7 @@ public class SearchBook extends AppCompatActivity {
                     double longitude = (double) dataSnapshot.child("l").child("1").getValue();
                     //Toast.makeText(SearchBook.this, latitude + " " + longitude, Toast.LENGTH_SHORT).show();
                     currentMarkerLocation = new LatLng(latitude, longitude);
-                    markers.put(isbn, new MarkerOptions().position(currentMarkerLocation).title(title));
+                    markers.put(bookId, new MarkerOptions().position(currentMarkerLocation).title(title));
                 }
             }
 

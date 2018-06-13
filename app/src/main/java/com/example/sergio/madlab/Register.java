@@ -1,34 +1,66 @@
 package com.example.sergio.madlab;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.sergio.madlab.Classes.User;
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class Register extends AppCompatActivity  implements View.OnClickListener {
+public class Register extends AppCompatActivity  implements View.OnClickListener, OnMapReadyCallback {
+
+
+    private final int PLACE_PICKER_REQUEST = 4;
 
     private EditText etEmail, etPass, etConfirm, etName, etCity;
     private Button btnSignup;
+    private ImageView btnChangeLocation;
 
+    private  String uID;
     private FirebaseAuth firebaseAuth;
-    private DatabaseReference db;
+    private DatabaseReference db, userLocations;
+
+    private LatLng chosenLocation;
+    private GoogleMap mMap;
 
 
     @Override
@@ -38,6 +70,7 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
 
         //Views
         btnSignup=(Button)findViewById(R.id.btnSignup);
+        btnChangeLocation=(ImageView) findViewById(R.id.changeLocation);
         etName = (EditText)findViewById(R.id.name);
         etEmail=(EditText)findViewById(R.id.email);
         etPass=(EditText)findViewById(R.id.password);
@@ -47,10 +80,16 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
 
         //
         btnSignup.setOnClickListener(this);
+        btnChangeLocation.setOnClickListener(this);
 
         //Firebase
         firebaseAuth=FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance().getReference();
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
     }
 
 
@@ -110,9 +149,10 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
                                 }
                             } else{
                                 firebaseAuth.signInWithEmailAndPassword(email, password);
-                                String uID = firebaseAuth.getUid();
+                                uID = firebaseAuth.getUid();
+                                insertLocation(uID);
                                 User user = new User(uID, name, email, city, "");
-                                String userID = email.replace(",",",,").replace(".", ",");
+                                //String userID = email.replace(",",",,").replace(".", ",");
                                 db.child("users").child(uID).setValue(user);
 
                                 Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
@@ -169,6 +209,67 @@ public class Register extends AppCompatActivity  implements View.OnClickListener
             case R.id.btnSignup:
                 registerUser();
                 break;
+
+            case R.id.changeLocation:
+                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                try {
+                    startActivityForResult(builder.build(Register.this), PLACE_PICKER_REQUEST);
+                } catch (GooglePlayServicesRepairableException e) {
+                    e.printStackTrace();
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
+
+
+
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        if (chosenLocation == null) {
+            //do nothing
+        } else {
+            mMap.addMarker(new MarkerOptions().position(chosenLocation).title("Your location"));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(chosenLocation, 12.0f));
+        }
+    }
+
+
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(intent, this);
+                chosenLocation = place.getLatLng();
+                etCity.setText(place.getAddress());
+                //Toast.makeText(InsertBook.this, "Location chosen successfully", Toast.LENGTH_SHORT).show();
+                onMapReady(mMap);
+            }
+
+        }
+    }
+
+
+
+    private void insertLocation(String uID) {
+        //DatabaseReference ref = FirebaseDatabase.getInstance().getReference("locations");
+        userLocations = db.child("user_locations");
+        GeoFire geoFire = new GeoFire(userLocations);
+        //TODO do this with current location or location chosen by user
+        geoFire.setLocation(uID, new GeoLocation(chosenLocation.latitude, chosenLocation.longitude), new GeoFire.CompletionListener() {
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    System.err.println("There was an error saving the location to GeoFire: " + error);
+                } else {
+                    System.out.println("Location saved on server successfully!");
+                }
+            }
+        });
+
+    }
+
 }
