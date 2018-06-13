@@ -52,75 +52,90 @@
     <string name="load_image_button">Cargar imagen</string>
     <string name="open_camera_button">Abrir cámara</string>
 
-    <!-- TODO seguir aquí -->
-
     <!-- Insert Book VIEW -->
     <string name="book_isbn">ISBN</string>
-    <string name="load_isbn">Load</string>
-    <string name="book_title">Title</string>
-    <string name="book_author">Author(s)</string>
-    <string name="book_publisher">Publisher</string>
-    <string name="book_editYear">Edition Year</string>
-    <string name="book_genre">Genre</string>
+    <string name="load_isbn">Cargar</string>
+    <string name="book_title">Título</string>
+    <string name="book_author">Autor(es)</string>
+    <string name="book_publisher">Editorial</string>
+    <string name="book_editYear">Año de edición</string>
+    <string name="book_genre">Género</string>
     <string-array name="book_genre_list">
-        <item>SELECT</item>
-        <item>Science</item>
-        <item>Technology</item>
-        <item>Fiction</item>
-        <item>Novel</item>
-        <item>Computer</item>
-        <item>Sport</item>
-        <item>Story</item>
+        <item>SELECCIONAR</item>
+        <item>Ciencia</item>
+        <item>Tecnología</item>
+        <item>Ficción</item>
+        <item>Novela</item>
+        <item>Informática</item>
+        <item>Deporte</item>
+        <item>Historia</item>
     </string-array>
-    <string name="book_tags">Tags</string>
-    <string name="book_condition">Condition</string>
-    <string name="book_location_button">Choose location</string>
-    <string name="book_location">No location chosen</string>
+    <string name="book_tags">Etiquetas</string>
+    <string name="book_condition">Condición</string>
+    <string name="book_location_button">Cambiar ubicación</string>
+    <string name="book_location">Ubicación no seleccionada</string>
+
 
     <!-- Search Book VIEW -->
     <string-array name="search_factor">
-        <item>Search by</item>
-        <item>> Title</item>
-        <item>> Author</item>
-        <item>> Publisher</item>
+        <item>Buscar por</item>
+        <item>> Título</item>
+        <item>> Autor</item>
+        <item>> Editorial</item>
     </string-array>
 
+
     <!--menu-->
-    <string name="menu_insert_book">Insert New Book</string>
-    <string name="menu_view_profile">View Profile</string>
-    <string name="menu_edit_profile">Edit Profile</string>
-    <string name="menu_messages">Messages</string>
-    <string name="menu_about_us">About us</string>
-    <string name="menu_sign_out">Sign out</string>
+    <string name="menu_insert_book">Nuevo libro</string>
+    <string name="menu_view_profile">Perfil</string>
+    <string name="menu_edit_profile">Editar perfil</string>
+    <string name="menu_messages">Mensajes</string>
+    <string name="menu_about_us">Acerca de nosotros</string>
+    <string name="menu_sign_out">Salir</string>
+    <string name="menu_requests">Peticiones</string>
+
+    <string name="menu_viewBook">Libro</string>
+    <string name="menu_chatWithOwner">Contactar con el propietario</string>
+    <string name="menu_return_book">Devolver Libro</string>
+    <string name="menu_review_book">Valorar Libro</string>
+
+
 
     <!-- Alerts-->
-    <string name="success">Success</string>
-    <string name="register_success">Registered successfully</string>
-    <string name="downloading">Downloading...</string>
-    <string name="downloaded">Downloaded successfully</string>
-    <string name="fetching_books">Fetching Books</string>
-    <string name="please_wait">Please Wait</string>
+    <string name="success">Éxito</string>
+    <string name="register_success">Registrado correctamente</string>
+    <string name="downloading">Descargando...</string>
+    <string name="downloaded">Descarga completada</string>
+    <string name="fetching_books">Obteniendo Libros</string>
+    <string name="please_wait">Por favor, espera</string>
+
+
+    <!--request book -->
+    <string name="request_book">Solicitar libro</string>
+    <string name="return_book">Devolver libro</string>
+    <string name="request_msg">¿Quieres solicitar este libro?</string>
 
 
     <!--errors-->
-    <string name="error_invalid_isbn">Fill the ISBN</string>
-    <string name="error_invalid_title">Fill the title</string>
-    <string name="error_invalid_author">Fill the author(s)</string>
-    <string name="error_invalid_publisher">Fill the publisher</string>
-    <string name="error_invalid_edityear">Fill the year</string>
-    <string name="error_invalid_genre">Select a genre</string>
-    <string name="error_invalid_condition">Fill the book condition</string>
-    <string name="error_invalid_search_factor">Select a criteria</string>
-    <string name="error_empty_searchvalue">Please fill with a text</string>
-    <string name="error_network">Please check your internet connection.</string>
-    <string name="error_noImage">Please provide an image.</string>
-    <string name="error">An error happened</string>
-    <string name="title_activity_about_us">About Us</string>
+    <string name="error_invalid_isbn">Completa el ISBN</string>
+    <string name="error_invalid_title">Completa el título</string>
+    <string name="error_invalid_author">Completa el autor</string>
+    <string name="error_invalid_publisher">Completa la editorial</string>
+    <string name="error_invalid_edityear">Completa el año</string>
+    <string name="error_invalid_genre">Selecciona un género</string>
+    <string name="error_invalid_condition">Completa la condición del libro</string>
+    <string name="error_invalid_search_factor">Selecciona un criterio</string>
+    <string name="error_empty_searchvalue">Por favor, utiliza texto</string>
+    <string name="error_network">Por favor, revisra tu conexión a internet</string>
+    <string name="error_noImage">Por favor, selecciona una imagen</string>
+    <string name="error">Ha ocurrido un error</string>
+    <string name="title_activity_about_us">Acerca de nosotros</string>
     <string name="large_text">
         "Mobile Application Developement\n2017-2018\n\n"
         "Javad Alizadeh Shabkhoslati (s235967)\n"
         "Sergio Aula (s254667)\n"
         "Mohammad Vesaghati (s...)\n"
     </string>
+    <string name="title_activity_maps2">Mapa</string>
 
 </resources>

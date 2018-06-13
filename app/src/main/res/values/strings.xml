@@ -115,7 +115,7 @@
 
     <!--request book -->
     <string name="request_book">Request Book</string>
-    <string name="return_book">Request Book</string>
+    <string name="return_book">Return Book</string>
     <string name="request_msg">Do you want to request the book?</string>
 
 
@@ -136,7 +136,7 @@
     <string name="large_text">
         "Mobile Application Developement\n2017-2018\n\n"
         "Javad Alizadeh Shabkhoslati (s235967)\n"
-        "Sergio Aula (s...)\n"
+        "Sergio Aula (s254667)\n"
         "Mohammad Vesaghati (s...)\n"
     </string>
     <string name="title_activity_maps2">Map</string>
